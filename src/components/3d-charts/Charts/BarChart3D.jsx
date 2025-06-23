@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Bar3D from './Bar3D';
+import Bar3D from './Bar3d';
 import { Text } from '@react-three/drei';
 
 function BarChart3D({ data, labelStyle = 'front' }) {
