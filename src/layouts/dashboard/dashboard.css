@@ -1,0 +1,154 @@
+
+.navhidden > div{
+  transform: translateX(0px) !important;
+  visibility: visible !important;
+  width: 66px !important;
+}
+.nav-menu-icon{
+  height: 40px !important;
+}
+.css-cijz23-MuiPaper-root-MuiAccordion-root::before{
+  height: 0px;
+}
+@media only screen and (max-width: 1200px) {
+    .header-mobile-view{
+      color: rgb(59, 114, 153) !important;
+    }
+}
+.drawer .MuiModal-backdrop{
+  background-color: transparent !important;
+  width: 280px !important;
+}
+@media only screen and (max-width: 600px) {
+  .home-icon-style{
+    display: none;
+  }
+  .title-style{
+    font-size: 1rem !important;
+    margin-bottom: 0px;
+    text-align: center;
+    padding: 11px;
+  }
+}
+
+.cust-nav-position > div {
+  background: var(--navBar-bg-color) !important;
+  top: 0px !important;
+  border-right: none;
+  box-shadow: none !important;
+}
+
+.toggle-label {
+  display: inline-block;
+  position: relative;
+}
+
+/* Hidden Checkbox */
+.toggle-checkbox {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.toggle-slot {
+  position: relative;
+  height: 2.6em;
+  width: 5em;
+  border: 2px solid #e4e7ec;
+  border-radius: 10em;
+  background-color: white;
+  transition: background-color 250ms;
+}
+
+.toggle-checkbox:checked ~ .toggle-slot {
+  background-color: #374151;
+}
+
+.toggle-button {
+  transform: translate(2.5em, 0.3em);
+  position: absolute;
+  height: 1.7em;
+  width: 1.7em;
+  border-radius: 50%;
+  background-color: #ffbb52;
+  box-shadow: inset 0px 0px 0px 0.5em #ffbb52;
+  transition: background-color 250ms, border-color 250ms, transform 500ms cubic-bezier(.26, 2, .46, .71);
+}
+.toggle-checkbox:checked ~ .toggle-slot .toggle-button {
+  background-color: white;
+  box-shadow: inset 0px 0px 0px 0.5em white;
+  transform: translate(.5em, 0.3em);
+}
+
+/* Sun Icon */
+.sun-icon {
+  position: absolute;
+  height: 1em;
+  width: 1em;
+  color: #ffbb52;
+}
+
+.sun-icon-wrapper {
+  position: absolute;
+  height: 1em;
+  width: 1em;
+  opacity: 1;
+  transform: translate(.5em, .7em) rotate(15deg);
+  transform-origin: 50% 50%;
+  transition: opacity 150ms, transform 500ms cubic-bezier(.26, 2, .46, .71);
+}
+
+.toggle-checkbox:checked ~ .toggle-slot .sun-icon-wrapper {
+  opacity: 0;
+  transform: translate(3em, 2em) rotate(0deg);
+}
+
+/* Moon Icon */
+.moon-icon {
+  position: absolute;
+  height: 1.2em;
+  width: 1.2em;
+  color: white;
+}
+
+.moon-icon-wrapper {
+  position: absolute;
+  height: 1em;
+  width: 1em;
+  opacity: 0;
+  transform: translate(11em, 2em) rotate(0deg);
+  transform-origin: 50% 50%;
+  transition: opacity 150ms, transform 500ms cubic-bezier(.26, 2.5, .46, .71);
+}
+
+.toggle-checkbox:checked ~ .toggle-slot .moon-icon-wrapper {
+  opacity: 1;
+  transform: translate(3em, 0.6em) rotate(-15deg);
+}
+
+.moon svg {
+  fill: #73C0FC;
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  z-index: 1;
+  width: 25px;
+  height: 25px;
+}
+
+.sun-icon {
+  animation: rotate 15s linear infinite;
+}
+
+@keyframes rotate {
+ 
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

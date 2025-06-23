@@ -1,0 +1,60 @@
+.contain {
+    display: flex;
+    padding: 0.2rem 0rem 0.2rem 0rem;
+    width: 100%;
+    font-size: 13px;
+    font-weight: bold;
+    /* line-height: 1.41rem !important; */
+    line-height: 4.15rem !important;
+}
+.legend-container {
+    width: 10%;
+    padding-top: 0.2rem;
+}
+.bar-container {
+    width: 83%;
+    background-color: #ddd;
+    display: block;
+    border-radius: 3px;
+    text-align: center;
+    z-index: 1;
+    position: relative;
+    /* padding: 0.3rem !important; */
+}
+.value-container{
+    width: 17%;
+    text-align: right;   
+    padding-top: 0.2rem;
+}
+.skills {
+    width: calc(var(--width) * 1%);
+    background-color: var(--backgroundcolor);
+    text-align: center;
+    color: transparent;
+    height: 100%;
+    border-radius: 3px;
+    position: absolute;
+    z-index: -1;
+  }
+
+  @media (max-width:480px)  {
+    .legend-container {
+        width: 15%;
+        padding-top: 0.2rem;
+    }
+    .bar-container {
+        width: 65%;
+        background-color: #ddd;
+        display: block;
+        border-radius: 3px;
+        text-align: center;
+        z-index: 1;
+        position: relative;
+        /* padding: 0.3rem !important; */
+    }
+    .value-container{
+        width: 20%;
+        text-align: right;   
+        padding-top: 0.2rem;
+    } 
+  }

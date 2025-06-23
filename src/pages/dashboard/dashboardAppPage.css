@@ -1,0 +1,31 @@
+.dashboard-container {
+  position: relative;
+}
+.gridColor{
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+button:hover,
+button:active:not(:focus-visible) {
+  --_s: .75;
+}
+button:active {
+  box-shadow: inset 0 0 0 100vmax var(--_c);
+  color: #fff;
+}
+
+.dashCard01{
+  background: linear-gradient(to top, #2d59fb,  #6fcef3);
+}
+.dashCard02{
+  background: linear-gradient(to top, #f25941,  #f1aa40);
+}
+.dashCard03{
+  background: linear-gradient(to top, #1eae28,  #23d47a);
+
+}
+.dashCard04 {
+  background: linear-gradient(to top, #f25d41,  #f1a740);
+
+}

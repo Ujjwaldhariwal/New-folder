@@ -1,0 +1,21 @@
+
+
+.registrationCard > div {
+  background-color: var(--card-color) !important;
+  box-shadow: none !important;
+}
+
+.registrationPopUpCard > div:nth-of-type(3) > div{
+  background:  var(--popup-body-color) !important;
+  box-shadow: none !important;
+}
+
+.selectBoxOption{
+  color: #000 !important;
+}
+
+.customTableBody > tr > td {
+  border-bottom: 1px solid var(--secondary-border-color) !important;
+  color: var(--primary-color) !important;
+}
+

@@ -1,0 +1,34 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import autoprefixer from 'autoprefixer'
+import legacy from '@vitejs/plugin-legacy'
+import tailwindcss from 'tailwindcss'
+
+export default defineConfig({
+  darkMode: 'class', // or 'media' or 'class'
+  // base: "/BOSCH/",
+  plugins: [
+    react(),
+    legacy({
+      targets: ['defaults', 'not IE 11'] // support all browsers
+    }),
+  ],
+  css: {
+    postcss: {
+      plugins: [tailwindcss(), autoprefixer()] //CSS support for better cross-browser compatibility
+    }
+  },
+  build: {
+    sourcemap: false,
+    chunkSizeWarningLimit: 4096, // Increase to 1 MB
+    rollupOptions: {
+            output: {
+              entryFileNames: `assets/[name].[hash].js`,
+              chunkFileNames: `assets/[name].[hash].js`,
+              assetFileNames: `assets/[name].[hash].[ext]`,
+            },
+          },
+  },
+})
+// GENERATE_SOURCEMAP = true
+
