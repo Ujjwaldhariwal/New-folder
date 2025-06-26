@@ -1,7 +1,9 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Text, Float } from '@react-three/drei';
 import * as THREE from 'three';
+
+const LABEL_COLOR = '#a0522d'; // Fixed brown label color
 
 function PieSlice({
   startAngle,
@@ -17,35 +19,11 @@ function PieSlice({
 }) {
   const meshRef = useRef();
   const [hovered, setHovered] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
-  // Check the document's theme once on mount and observes for changes.
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    checkTheme();
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    return () => observer.disconnect();
-  }, []);
-
-  // Use CSS variables for consistent, theme-aware colors.
-  const themeColors = useMemo(() => {
-    return {
-      textPrimary: `var(--text-primary-${isDark ? 'dark' : 'light'})`,
-      textSecondary: `var(--text-secondary-${isDark ? 'dark' : 'light'})`,
-      outline: isDark ? '#111827' : '#ffffff', // Dark or light outline for text contrast
-    };
-  }, [isDark]);
-
-  // Animate the slice on hover for a responsive feel.
+  // Animate slice on hover
   useFrame(() => {
     if (meshRef.current) {
-      const targetY = hovered || isHovered ? height * 0.2 : 0; // Pop out slightly
+      const targetY = hovered || isHovered ? height * 0.2 : 0;
       meshRef.current.position.y = THREE.MathUtils.lerp(
         meshRef.current.position.y,
         targetY,
@@ -56,10 +34,9 @@ function PieSlice({
     }
   });
 
-  // Memoize the geometry calculation for performance.
   const geometry = useMemo(() => {
     const shape = new THREE.Shape();
-    const innerRadius = radius * 0.4; // Create a donut hole relative to the main radius
+    const innerRadius = radius * 0.4;
 
     shape.moveTo(innerRadius * Math.cos(startAngle), innerRadius * Math.sin(startAngle));
     shape.lineTo(radius * Math.cos(startAngle), radius * Math.sin(startAngle));
@@ -79,9 +56,8 @@ function PieSlice({
     return new THREE.ExtrudeGeometry(shape, extrudeSettings);
   }, [startAngle, endAngle, radius, height]);
 
-  // Position labels around the pie chart.
   const midAngle = (startAngle + endAngle) / 2;
-  const labelRadius = radius * 1.4; // Place labels further out for clarity
+  const labelRadius = radius * 1.4;
   const labelPosition = [
     labelRadius * Math.cos(midAngle),
     height / 2,
@@ -102,22 +78,22 @@ function PieSlice({
         >
           <meshStandardMaterial
             color={color}
-            metalness={isDark ? 0.4 : 0.2}
-            roughness={isDark ? 0.5 : 0.6}
+            metalness={0.2}
+            roughness={0.6}
             emissive={hovered || isHovered ? color : '#000000'}
             emissiveIntensity={hovered || isHovered ? 0.5 : 0}
           />
         </mesh>
       </Float>
 
-      {/* Labels for the slice */}
+      {/* Labels with fixed brown color */}
       <Text
         position={labelPosition}
         fontSize={0.16}
-        color={themeColors.textPrimary}
+        color={LABEL_COLOR}
         anchorX="center"
         anchorY="middle"
-        outlineColor={themeColors.outline}
+        outlineColor={'#ffffff'}
         outlineWidth={0.005}
       >
         {label}
@@ -126,10 +102,10 @@ function PieSlice({
         position={[labelPosition[0], labelPosition[1] - 0.2, labelPosition[2]]}
         fontSize={0.22}
         fontWeight="bold"
-        color={themeColors.textPrimary}
+        color={LABEL_COLOR}
         anchorX="center"
         anchorY="middle"
-        outlineColor={themeColors.outline}
+        outlineColor={'#ffffff'}
         outlineWidth={0.005}
       >
         {value}%

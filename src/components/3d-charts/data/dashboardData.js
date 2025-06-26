@@ -11,12 +11,14 @@ import {
     outageCountDTR
 } from '../../../auth/services/Services';
 
+// Unique label color for both light and dark mode backgrounds (white and #26293c)
+export const LABEL_COLOR = '#E06C75'; // Muted teal, works well on white and dark blue-gray
+
 // --- STATIC DATA (as a fallback or for other charts) ---
 export const installedMetersData = [
-  { id: 1, label: 'Consumer', value: 85, color: '#06B6D4' },
-  { id: 2, label: 'Others', value: 15, color: '#FB923C' }
+  { id: 1, label: 'Consumer', value: 85, color: '#06B6D4', labelColor: LABEL_COLOR },
+  { id: 2, label: 'Others', value: 15, color: '#FB923C', labelColor: LABEL_COLOR }
 ];
-
 
 // --- API-DRIVEN DATA FUNCTIONS ---
 
@@ -28,7 +30,7 @@ export const installedMetersData = [
  */
 const handleFetchError = (chartName, error) => {
     console.error(`Error fetching data for ${chartName}:`, error);
-    return [{ id: 1, label: 'API Error', value: 100, color: '#F43F5E' }];
+    return [{ id: 1, label: 'API Error', value: 100, color: '#F43F5E', labelColor: LABEL_COLOR }];
 };
 
 const fetchConnectDisconnectData = async () => {
@@ -40,9 +42,9 @@ const fetchConnectDisconnectData = async () => {
         const statusData = response.data[0];
         return [
             { id: 1, label: 'Connected', value: statusData.conn_comm || 0, color: '#22C55E' },
-            { id: 2, label: 'Disconnected', value: statusData.disconn_comm || 0, color: '#F43F5E' },
-            { id: 3, label: 'Communication', value: '...', color: '#2563EB', isLoading: true },
-            { id: 4, label: 'Non Communication', value: '...', color: '#FACC15', isLoading: true }
+            { id: 2, label: 'Disconnected', value: statusData.disconn_comm || 0, color: '#F43F5E'},
+            { id: 3, label: 'Communication', value: '...', color: '#2563EB', isLoading: true, labelColor: LABEL_COLOR },
+            { id: 4, label: 'Non Communication', value: '...', color: '#FACC15', isLoading: true, labelColor: LABEL_COLOR }
         ];
     } catch (error) {
         return handleFetchError("Connection Status", error);
@@ -60,7 +62,8 @@ const fetchDisconnectionAgeingData = async () => {
         id: index + 1, 
         label: item.disconnected_since || 'Unknown', 
         value: parseFloat(item['count(9)']) || 0, 
-        color: colors[index % colors.length] 
+        color: colors[index % colors.length],
+        labelColor: LABEL_COLOR
     }));
   } catch (error) {
     return handleFetchError("Disconnection Ageing", error);
@@ -76,14 +79,15 @@ const fetchPFReportData = async () => {
     };
     try {
         const response = await getPFReport();
-        if (!response || response.status !== true || !Array.isArray(response.data)) {
+        if (!response || !response.status || !Array.isArray(response.data)) {
             throw new Error("Invalid API response for PF Report");
         }
         return response.data.map((item, index) => ({
             id: index + 1,
             label: item.pf_cat || 'Unknown',
             value: parseFloat(item['count(9)']) || 0,
-            color: colorMapping[item.pf_cat] || '#9ca3af'
+            color: colorMapping[item.pf_cat] || '#9ca3af',
+            labelColor: LABEL_COLOR
         }));
     } catch (error) {
         return handleFetchError("PF Report", error);
@@ -100,14 +104,15 @@ const fetchNetMeteringData = async () => {
     const colors = ['#3b82f6', '#16a34a', '#ef4444', '#f97316', '#8b5cf6', '#d946ef', '#14b8a6', '#f59e0b', '#6366f1', '#ec4899'];
     try {
         const response = await netMeteringCon();
-        if (!response || response.status !== true || !Array.isArray(response.data)) {
+        if (!response || !response.status || !Array.isArray(response.data)) {
             throw new Error("Invalid API response for Net Metering");
         }
         return response.data.map((item, index) => ({
             id: index + 1,
             label: formatDateLabel(item.month_year),
             value: parseFloat(item.count) || 0,
-            color: colors[index % colors.length]
+            color: colors[index % colors.length],
+            labelColor: LABEL_COLOR
         }));
     } catch(error) {
         return handleFetchError("Net Metering", error);
@@ -117,15 +122,15 @@ const fetchNetMeteringData = async () => {
 const fetchCommunicationData = async (apiFunction, chartName) => {
     try {
         const response = await apiFunction();
-        if (!response || response.status !== true || !Array.isArray(response.data) || response.data.length === 0) {
+        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) {
             throw new Error(`Invalid API response for ${chartName}`);
         }
         const data = response.data[0];
         const communicating = parseFloat(data.communnicating_meters) || 0;
         const nonCommunicating = parseFloat(data.non_comm_current) || 0;
         return [
-            { id: 1, label: 'On Line Meters', value: communicating, color: '#06B6D4' },
-            { id: 2, label: 'Off Line Meters', value: nonCommunicating, color: '#FB923C' }
+            { id: 1, label: 'On Line Meters', value: communicating, color: '#06B6D4', labelColor: LABEL_COLOR },
+            { id: 2, label: 'Off Line Meters', value: nonCommunicating, color: '#FB923C', labelColor: LABEL_COLOR }
         ];
     } catch (error) {
         return handleFetchError(chartName, error);
@@ -139,15 +144,15 @@ const fetchConsumerData = () => fetchCommunicationData(comStatusCONS, 'Consumer 
 const fetchOutageData = async (apiFunction, chartName) => {
     try {
         const response = await apiFunction();
-        if (!response || response.status !== true || !Array.isArray(response.data) || response.data.length === 0) {
+        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) {
             throw new Error(`Invalid API response for ${chartName}`);
         }
         const data = response.data[0];
         return [
-            { id: 1, label: 'Duration 0-5 min', value: parseFloat(data.less_then_5min) || 0, color: '#2563EB' },
-            { id: 2, label: 'Duration 5-10 min', value: parseFloat(data.between_5_10min) || 0, color: '#22C55E' },
-            { id: 3, label: 'Duration 10-60 min', value: parseFloat(data.between_10_60min) || 0, color: '#FACC15' },
-            { id: 4, label: 'Duration >60 min', value: parseFloat(data.more_then_60min) || 0, color: '#F43F5E' }
+            { id: 1, label: 'Duration 0-5 min', value: parseFloat(data.less_then_5min) || 0, color: '#2563EB', labelColor: LABEL_COLOR },
+            { id: 2, label: 'Duration 5-10 min', value: parseFloat(data.between_5_10min) || 0, color: '#22C55E', labelColor: LABEL_COLOR },
+            { id: 3, label: 'Duration 10-60 min', value: parseFloat(data.between_10_60min) || 0, color: '#FACC15', labelColor: LABEL_COLOR },
+            { id: 4, label: 'Duration >60 min', value: parseFloat(data.more_then_60min) || 0, color: '#F43F5E', labelColor: LABEL_COLOR }
         ];
     } catch (error) {
         return handleFetchError(chartName, error);
@@ -212,4 +217,3 @@ export const dashboardSections = [
     ]
   }
 ];
-

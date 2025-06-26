@@ -1,13 +1,6 @@
 import React from 'react';
 import CompactChart from '../UI/CompactChart';
 
-/**
- * A responsive grid component for displaying charts.
- * @param {object} props - The component props.
- * @param {Array<object>} props.charts - An array of chart objects to display.
- * @param {number} [props.columns=3] - The default number of columns for the grid layout.
- * @param {function} props.onChartClick - A callback function to handle clicks on individual charts.
- */
 function ChartGrid({ charts, columns = 3, onChartClick }) {
   const getGridCols = () => {
     switch (columns) {
@@ -26,12 +19,16 @@ function ChartGrid({ charts, columns = 3, onChartClick }) {
   return (
     <div className={`grid gap-2 ${getGridCols()}`}>
       {charts.map((chart) => (
-        <CompactChart
+        <div
           key={chart.id}
-          {...chart}
-          height="250px"
+          className="cursor-pointer"
           onClick={() => onChartClick(chart)}
-        />
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onChartClick(chart); }}
+        >
+          <CompactChart {...chart} height="250px" />
+        </div>
       ))}
     </div>
   );

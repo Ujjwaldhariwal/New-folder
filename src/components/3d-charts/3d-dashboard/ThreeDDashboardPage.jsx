@@ -44,9 +44,7 @@ function ThreeDDashboardPage() {
               </button>
               <div className="flex items-center space-x-2 text-sm">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-[var(--text-secondary-light)] dark:text-[var(--text-secondary-dark)]">
-                  System Status: Operational
-                </span>
+                
               </div>
             </div>
           </div>

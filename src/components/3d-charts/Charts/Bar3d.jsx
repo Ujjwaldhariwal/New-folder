@@ -3,6 +3,8 @@ import { useFrame } from '@react-three/fiber';
 import { Text, Float } from '@react-three/drei';
 import * as THREE from 'three';
 
+const LABEL_COLOR = '#a0522d'; // SaddleBrown fixed color for labels
+
 function Bar3D({
   position,
   height,
@@ -16,30 +18,6 @@ function Bar3D({
 }) {
   const meshRef = useRef();
   const [hovered, setHovered] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-
-  // Check theme from document class
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    checkTheme();
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    return () => observer.disconnect();
-  }, []);
-
-  // Use CSS variables for theme-based colors
-  const themeColors = useMemo(() => {
-    return {
-      textPrimary: `var(--text-primary-${isDark ? 'dark' : 'light'})`,
-      textSecondary: `var(--text-secondary-${isDark ? 'dark' : 'light'})`,
-      gridLines: `var(--border-${isDark ? 'dark' : 'light'})`,
-    };
-  }, [isDark]);
 
   // Animation loop for hover effects
   useFrame(() => {
@@ -68,7 +46,7 @@ function Bar3D({
             <Text
               position={[position[0], height + 0.25, position[2]]}
               fontSize={0.14}
-              color={themeColors.textPrimary}
+              color={LABEL_COLOR}
               anchorX="center"
               anchorY="middle"
             >
@@ -77,7 +55,7 @@ function Bar3D({
             <Text
               position={[position[0], -0.2, position[2]]}
               fontSize={0.12}
-              color={themeColors.textSecondary}
+              color={LABEL_COLOR}
               anchorX="center"
               anchorY="middle"
             >
@@ -92,16 +70,16 @@ function Bar3D({
               <Text
                 position={[position[0], height + 0.25, position[2]]}
                 fontSize={0.14}
-                color={themeColors.textPrimary}
+                color={LABEL_COLOR}
                 anchorX="center"
               >
                 {label}: {value}
               </Text>
             )}
-             <Text
+            <Text
               position={[position[0], -0.2, position[2]]}
               fontSize={0.12}
-              color={themeColors.textSecondary}
+              color={LABEL_COLOR}
               anchorX="center"
               anchorY="middle"
             >
@@ -116,7 +94,7 @@ function Bar3D({
             <Text
               position={[position[0], height + 0.2, position[2]]}
               fontSize={0.15}
-              color={themeColors.textPrimary}
+              color={LABEL_COLOR}
               anchorX="center"
               anchorY="middle"
             >
@@ -125,7 +103,7 @@ function Bar3D({
             <Text
               position={[position[0], -0.2, position[2]]}
               fontSize={0.12}
-              color={themeColors.textSecondary}
+              color={LABEL_COLOR}
               anchorX="center"
               anchorY="middle"
             >
@@ -150,8 +128,8 @@ function Bar3D({
         >
           <meshStandardMaterial
             color={color}
-            metalness={isDark ? 0.3 : 0.5}
-            roughness={isDark ? 0.4 : 0.3}
+            metalness={0.5}
+            roughness={0.3}
             emissive={hovered || isHovered ? color : '#000000'}
             emissiveIntensity={hovered || isHovered ? 0.4 : 0}
           />
