@@ -7,12 +7,14 @@ const icon = (name) => <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ 
 
 const navConfig = [
   {
-     title: 'Dashboard',
+    title: 'Dashboard',
+    path: '/dashboard/app', // Path updated to go directly to the app route
     icon: <DashboardIcon />,
-    child: [
-      { title: '2D Dashboard', path: '/dashboard/app', icon: <DashboardIcon /> },
-      { title: '3D Dashboard', path: '/dashboard/3d-dashboard', icon: <DashboardIcon /> },
-    ],
+    // child array commented out as it is no longer a dropdown
+    // child: [
+    //   { title: '2D Dashboard', path: '/dashboard/app', icon: <DashboardIcon /> },
+    //   { title: '3D Dashboard', path: '/dashboard/3d-dashboard', icon: <DashboardIcon /> },
+    // ],
   },
   {
     title: 'admin',

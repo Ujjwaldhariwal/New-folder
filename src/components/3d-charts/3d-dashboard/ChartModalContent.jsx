@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import Scene from '../Charts/Scene';
 import DataTable from '../UI/DataTable';
@@ -6,8 +6,33 @@ import DataTable from '../UI/DataTable';
 function ChartModalContent({ chart, onClose }) {
   const [barLabelStyle, setBarLabelStyle] = useState('front');
   const [isAnimating, setIsAnimating] = useState(true);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  // Effect to detect theme changes on the root HTML element
+  useEffect(() => {
+    const checkTheme = () => {
+      const currentlyDark = document.documentElement.classList.contains('dark');
+      setIsDark(currentlyDark);
+    };
+
+    // Initial check is done in useState initializer, but we can do it again just in case.
+    checkTheme(); 
+
+    // Observe for class changes (like toggling 'dark' mode)
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    // Cleanup the observer when the component unmounts
+    return () => observer.disconnect();
+  }, []);
 
   const toggleAnimation = () => setIsAnimating((prev) => !prev);
+
+  // Determine the correct color for the DataTable header based on the theme
+  const overviewHeaderColor = isDark ? '#999999' : '#4a4a4a';
 
   // Fallback in case chart data is not available yet
   if (!chart || !chart.data) {
@@ -52,8 +77,11 @@ function ChartModalContent({ chart, onClose }) {
 
       {/* Controls and Data Table */}
       <div className="space-y-6">
-        {/* The DataTable now receives the tableHeaders from the chart object */}
-        <DataTable data={chart.data} headers={chart.tableHeaders} />
+        <DataTable 
+          data={chart.data} 
+          headers={chart.tableHeaders}
+          overviewHeaderColor={overviewHeaderColor} // Pass the dynamic color as a prop
+        />
       </div>
     </div>
   );

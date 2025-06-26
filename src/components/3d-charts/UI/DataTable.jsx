@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 
-function DataTable({ data, headers }) { // Added 'headers' prop
+function DataTable({ data, headers, overviewHeaderColor }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   // Use provided headers or fallback to defaults
   const headerLabel = headers?.label || 'Category';
   const headerValue = headers?.value || 'Value';
-
+  
   const sortedData = useMemo(() => {
     if (!data) return []; // Guard against null/undefined data
     if (!sortConfig.key) return data;
@@ -50,7 +50,7 @@ function DataTable({ data, headers }) { // Added 'headers' prop
     >
       <h3
         className="text-lg font-semibold mb-3 flex items-center"
-        style={{ color: 'var(--card-Header-color)' }}
+        style={{ color: overviewHeaderColor || 'var(--card-Header-color)' }} // Use the color from props
       >
         <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: '#FACC15' }}></span>
         Data Overview
@@ -68,7 +68,7 @@ function DataTable({ data, headers }) { // Added 'headers' prop
                   textAlign: 'left',
                 }}
               >
-                {headerLabel} {getSortIcon('label')} {/* DYNAMIC HEADER */}
+                {headerLabel} {getSortIcon('label')}
               </th>
               <th
                 className="pb-2 cursor-pointer transition-colors"
@@ -78,7 +78,7 @@ function DataTable({ data, headers }) { // Added 'headers' prop
                   textAlign: 'right',
                 }}
               >
-                {headerValue} {getSortIcon('value')} {/* DYNAMIC HEADER */}
+                {headerValue} {getSortIcon('value')}
               </th>
             </tr>
           </thead>
@@ -105,7 +105,7 @@ function DataTable({ data, headers }) { // Added 'headers' prop
                     </span>
                   </div>
                 </td>
-                <td className="py-3 text-right font-mono"> {/* Changed alignment and font */}
+                <td className="py-3 text-right font-mono">
                     {typeof item.value === 'number' ? item.value.toLocaleString() : item.value}
                 </td>
               </tr>

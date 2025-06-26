@@ -13,11 +13,11 @@
   --popup-body-color: white;
   --card-color: rgb(255 255 255);
   --card-Header-color: #4a4a4a;
-  --bar-axis-color: #c5c3c3 !important;
+  --bar-axis-color: #4a4a4a !important;
   --active-color: #f7f7f9;
   --nav-active-color: #d3d3d3;         /* changed from #0f77eb or #fff */
   --login-input-color: #2e2b3d;
-  --custom-color: #d3d3d3;             /* changed from #000 or #fff */
+  --custom-color: #4a4a4a;             /* changed from #000 or #fff */
   --account-popup-color: #fff;
   --disabled-color: #f7f7f9;
   --navBar-bg-color: linear-gradient(to top, #a8a2d8, #ffffff, #ffffff);
@@ -37,10 +37,10 @@
   --popup-body-color: #1f1d2e;
   --card-color: #26293c;
   --card-Header-color: #999999;
-  --bar-axis-color: #c5c3c3 !important;  /* changed from #fff */
+  --bar-axis-color: #999999 !important;  /* changed from #fff */
   --active-color: #000;
   --nav-active-color: #d3d3d3;           /* changed from #fff */
-  --custom-color: #d3d3d3;               /* changed from #fff */
+  --custom-color: #999999;               /* changed from #fff */
   --account-popup-color: rgb(55 65 81);
   --disabled-color: rgb(55 65 81);
   --navBar-bg-color: #26293c;

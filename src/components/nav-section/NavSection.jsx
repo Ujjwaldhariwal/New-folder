@@ -102,22 +102,25 @@ export default function NavSection({ data = [], openNav, ...other }) {
   const userData = useSelector((state) => state.auth.data.data);
   const isAuth = useSelector((state) => state.auth.isAuth);
   const isSessionIdle = SessionTimeout();
-  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+
+  // --- MODIFICATION: State for dashboard dropdown is no longer needed ---
+  // const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isReportPanelOpen, setIsReportPanelOpen] = useState(false);
-  
-  const handleDashboardOpen = () => {
-    setIsDashboardOpen(!isDashboardOpen);
-  };
-  
+
+  // --- MODIFICATION: Handler for dashboard dropdown is no longer needed ---
+  // const handleDashboardOpen = () => {
+  //   setIsDashboardOpen(!isDashboardOpen);
+  // };
+
   const handleAdminPanelOpen = () => {
     setIsAdminPanelOpen(!isAdminPanelOpen);
   };
-  
+
   const handleReportPanelOpen = () => {
     setIsReportPanelOpen(!isReportPanelOpen);
   };
-  
+
   const location = useLocation();
   const maxLength = 20;
 
@@ -129,10 +132,12 @@ export default function NavSection({ data = [], openNav, ...other }) {
         navigate(`/login`);
       }, 1000);
     }
-  }, [isSessionIdle]);
+  }, [isSessionIdle, isAuth, dispatch, navigate]); // Added dependencies to useEffect
 
   const isActive = (path) => {
-    return location.pathname === path;
+    // Using startsWith to ensure parent menu items can be highlighted if a child route is active.
+    // For a direct link like Dashboard, it works perfectly.
+    return location.pathname.startsWith(path);
   };
 
   const getListItemStyles = (path) => {
@@ -149,7 +154,7 @@ export default function NavSection({ data = [], openNav, ...other }) {
         style={{
           background: 'var(--navBar-bg-color)',
           height: '100vh',
-          overflowY: openNav ? 'auto' : "visible",
+          overflowY: openNav ? 'auto' : 'visible',
           // borderRight: '1px solid var(--primary-border-color)',
         }}
       >
@@ -163,8 +168,44 @@ export default function NavSection({ data = [], openNav, ...other }) {
           </div>
         )}
         {!openNav && <hr className="border-b border-gray-400 mx-2" />}
+
         <List style={{ paddingTop: '12px' }}>
-          {/* Dashboard Section - Collapsible */}
+          {/* --- MODIFICATION START ---
+            The original collapsible Accordion for the Dashboard has been replaced with a single, direct ListItem link.
+            This simplifies the UI so that clicking "Dashboard" directly navigates the user to the 3D Dashboard at '/dashboard/app'.
+            This change applies to both the expanded (openNav) and collapsed (!openNav) sidebar views.
+          */}
+          {userData && (userData.role_id === 'ADMIN' || userData.menu.includes('Dashboard')) && (
+            <ListItem
+              button
+              component={Link}
+              to={`/dashboard/app`}
+              style={
+                isActive('/dashboard/app')
+                  ? { ...styles.parentTab, backgroundColor: 'var(--nav-active-bg-color)', color: 'var(--nav-active-color)' } // Apply active styles
+                  : styles.parentTab
+              }
+            >
+              <ListItemIcon
+                style={
+                  isActive('/dashboard/app')
+                    ? { ...styles.parentIcon, color: 'var(--nav-active-color)' }
+                    : styles.parentIcon
+                }
+              >
+                <DashboardIcon style={styles.iconFontStyle} titleAccess="Dashboard" />
+              </ListItemIcon>
+              {openNav && <ListItemText primary="Dashboard" />}
+            </ListItem>
+          )}
+          {/* --- MODIFICATION END --- */}
+
+
+          {/* --- ORIGINAL CODE COMMENTED OUT ---
+            Below is the original code that created a collapsible menu for "2D Dashboard" and "3D Dashboard".
+            It has been preserved here for reference.
+          */}
+          {/*
           {!openNav ? (
             <>
               {userData && (userData.role_id === 'ADMIN' || userData.menu.includes('Dashboard')) && (
@@ -178,7 +219,7 @@ export default function NavSection({ data = [], openNav, ...other }) {
                   </ListItemIcon>
                 </ListItem>
               )}
-              
+
               {isDashboardOpen && userData && (userData.role_id === 'ADMIN' || userData.menu.includes('Dashboard')) && (
                 <>
                   <ListItem
@@ -201,7 +242,7 @@ export default function NavSection({ data = [], openNav, ...other }) {
                       <DashboardIcon style={styles.iconFontStyle} titleAccess="2D Dashboard" />
                     </ListItemIcon>
                   </ListItem>
-                  
+
                   <ListItem
                     className="nav-menu-icon"
                     style={
@@ -229,8 +270,8 @@ export default function NavSection({ data = [], openNav, ...other }) {
             <>
               {userData && (userData.role_id === 'ADMIN' || userData.menu.includes('Dashboard')) && (
                 <Accordion style={styles.bgTransparent} className="mt-0">
-                  <AccordionSummary 
-                    expandIcon={<ExpandMoreIcon style={styles.parentIcon} />} 
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon style={styles.parentIcon} />}
                     style={styles.parentTab}
                   >
                     <ListItemIcon
@@ -242,8 +283,8 @@ export default function NavSection({ data = [], openNav, ...other }) {
                     >
                       <DashboardIcon style={styles.iconFontStyle} />
                     </ListItemIcon>
-                    <ListItemText 
-                      primary="Dashboard" 
+                    <ListItemText
+                      primary="Dashboard"
                       style={
                         (isActive('/dashboard/app') || isActive('/dashboard/3d-dashboard'))
                           ? { color: 'var(--nav-active-color)' }
@@ -275,8 +316,11 @@ export default function NavSection({ data = [], openNav, ...other }) {
               )}
             </>
           )}
+          */}
+          {/* --- END OF COMMENTED OUT ORIGINAL CODE --- */}
 
-          {/* Admin Section */}
+
+          {/* Admin Section - This code remains unchanged */}
           {!openNav ? (
             <>
               {userData && userData.role_id === 'ADMIN' && (
@@ -322,19 +366,19 @@ export default function NavSection({ data = [], openNav, ...other }) {
               {userData && userData.role_id === 'ADMIN' && (
                 <Accordion style={styles.bgTransparent} className="mt-0">
                   <AccordionSummary expandIcon={<ExpandMoreIcon style={styles.parentIcon} />} style={styles.parentTab}>
-                    <ListItemIcon  style={
-                          isActive('/dashboard/user-registration')
-                            ? { ...styles.parentIcon, color: 'var(--nav-active-color)' }
-                            : styles.parentIcon
-                        }
-                        >
+                    <ListItemIcon style={
+                      isActive('/dashboard/user-registration')
+                        ? { ...styles.parentIcon, color: 'var(--nav-active-color)' }
+                        : styles.parentIcon
+                    }
+                    >
                       <AdminPanelSettingsIcon style={styles.iconFontStyle} />
                     </ListItemIcon>
                     <ListItemText primary="Admin" style={
-                          isActive('/dashboard/user-registration')
-                            ? { ...styles.parentIcon, color: 'var(--nav-active-color)' }
-                            : styles.parentIcon
-                        }/>
+                      isActive('/dashboard/user-registration')
+                        ? { ...styles.parentIcon, color: 'var(--nav-active-color)' }
+                        : styles.parentIcon
+                    } />
                   </AccordionSummary>
                   <AccordionDetails style={{ padding: '0px 9px 0px' }}>
                     <List style={{ paddingTop: '0px', paddingBottom: '1px' }}>

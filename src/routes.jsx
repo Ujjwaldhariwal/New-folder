@@ -4,7 +4,7 @@ import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
 import LoginPage from './pages/login/LoginPage';
 import Page404 from './pages/Page404';
-import DashboardAppPage from './pages/dashboard/DashboardAppPage';
+// import DashboardAppPage from './pages/dashboard/DashboardAppPage';
 import UserRegistration from './pages/admin/UserRegistration';
 import ThreeDDashboardPage from './components/3d-charts/3d-dashboard/ThreeDDashboardPage'; // ✅ import here
 
@@ -51,18 +51,19 @@ export default function Router() {
     path: 'app',
     element: (
       <ProtectedRoute requiredPermission="Dashboard">
-        <DashboardAppPage />
+        {/* <DashboardAppPage /> */}
+         <ThreeDDashboardPage />
       </ProtectedRoute>
     ),
   },
-  {
-    path: '3d-dashboard',
-    element: (
-      <ProtectedRoute requiredPermission="Dashboard">
-        <ThreeDDashboardPage />
-      </ProtectedRoute>
-    ),
-  },
+  // {
+  //   path: '3d-dashboard',
+  //   element: (
+  //     <ProtectedRoute requiredPermission="Dashboard">
+  //       <ThreeDDashboardPage />
+  //     </ProtectedRoute>
+  //   ),
+  // },
   {
     path: 'user-registration',
     element: (
