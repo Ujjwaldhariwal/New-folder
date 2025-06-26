@@ -36,19 +36,32 @@ function Dashboard({ data, isAnimating }) {
   };
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[600px]">
-        {/* 3D Chart - Takes up 2 columns on large screens */}
-        <div className="lg:col-span-2 bg-black/20 backdrop-blur-sm rounded-xl border border-white/10 p-4">
+    <div
+      className="container mx-auto px-6 py-8"
+      style={{ color: 'var(--custom-color)' }}
+    >
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-10 min-h-[600px]">
+        {/* 3D Chart - 2 columns */}
+        <div
+          className="lg:col-span-2 rounded-xl border p-4 backdrop-blur-sm"
+          style={{
+            backgroundColor: 'var(--card-color)',
+            borderColor: 'var(--primary-border-color)',
+          }}
+        >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white">
+            <h2
+              className="text-xl font-semibold"
+              style={{ color: 'var(--card-Header-color)' }}
+            >
               {getChartTitle()}
             </h2>
-            <div className="flex items-center space-x-2 text-sm text-gray-400">
+            <div className="flex items-center space-x-2 text-sm" style={{ color: 'var(--bar-axis-color)' }}>
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
               <span>Real-time</span>
             </div>
           </div>
+
           <div className="h-[500px] rounded-lg overflow-hidden">
             <Canvas 
               camera={{ position: [0, 3, 5], fov: 60 }} 
@@ -62,34 +75,34 @@ function Dashboard({ data, isAnimating }) {
               />
             </Canvas>
           </div>
+
           <div className="mt-4 text-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-sm" style={{ color: 'var(--bar-axis-color)' }}>
               {getChartInstructions()}
             </p>
           </div>
         </div>
 
-        {/* Sidebar - Takes up 1 column */}
+        {/* Sidebar - 1 column */}
         <div className="space-y-6">
           <ChartSelector 
             activeChart={activeChart} 
             onChartChange={setActiveChart} 
           />
-          
-          {/* Show bar chart controls only when bar chart is active */}
+
           {activeChart === 'bar' && (
             <BarChartControls 
               labelStyle={barLabelStyle}
               onLabelStyleChange={setBarLabelStyle}
             />
           )}
-          
+
           <Legend data={data} />
           <Statistics data={data} />
         </div>
       </div>
 
-      {/* Full width data table */}
+      {/* Data Table */}
       <div className="mt-8">
         <DataTable data={data} />
       </div>

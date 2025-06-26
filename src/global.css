@@ -484,3 +484,20 @@ td.sticky-column {
 input:focus-visible {
   outline: -webkit-focus-ring-color auto 0px !important;
 }
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-in-out;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}

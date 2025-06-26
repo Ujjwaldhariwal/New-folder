@@ -1,5 +1,4 @@
-// components/charts/Bar3D.tsx
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Text, Float } from '@react-three/drei';
 import * as THREE from 'three';
@@ -17,15 +16,38 @@ function Bar3D({
 }) {
   const meshRef = useRef();
   const [hovered, setHovered] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
-  // Animation loop
+  // Check theme from document class
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  // Use CSS variables for theme-based colors
+  const themeColors = useMemo(() => {
+    return {
+      textPrimary: `var(--text-primary-${isDark ? 'dark' : 'light'})`,
+      textSecondary: `var(--text-secondary-${isDark ? 'dark' : 'light'})`,
+      gridLines: `var(--border-${isDark ? 'dark' : 'light'})`,
+    };
+  }, [isDark]);
+
+  // Animation loop for hover effects
   useFrame(() => {
     if (meshRef.current) {
-      const scaleTarget = hovered || isHovered ? 1.1 : 1;
-      const newScale = new THREE.Vector3(scaleTarget, 1, scaleTarget);
-      meshRef.current.scale.lerp(newScale, 0.1);
+      const scaleTarget = hovered || isHovered ? 1.05 : 1;
+      meshRef.current.scale.lerp(new THREE.Vector3(scaleTarget, 1, scaleTarget), 0.1);
 
-      const posTargetY = hovered || isHovered ? height / 2 + 0.15 : height / 2;
+      const posTargetY = height / 2;
       meshRef.current.position.y = THREE.MathUtils.lerp(
         meshRef.current.position.y,
         posTargetY,
@@ -34,125 +56,104 @@ function Bar3D({
     }
   });
 
-  const geometry = useMemo(() => new THREE.BoxGeometry(0.8, height, 0.8), [height]);
+  const geometry = useMemo(() => new THREE.BoxGeometry(0.7, height, 0.7), [height]);
 
   const renderLabels = () => {
+    const shouldShow = hovered || isHovered;
+
     switch (labelStyle) {
       case 'onbar':
         return (
           <>
             <Text
-              position={[position[0], height + 0.3, position[2]]}
+              position={[position[0], height + 0.25, position[2]]}
               fontSize={0.14}
-              color="#ffffff"
+              color={themeColors.textPrimary}
               anchorX="center"
               anchorY="middle"
             >
               {value}
             </Text>
             <Text
-              position={[position[0], height / 2, position[2] + 0.5]}
+              position={[position[0], -0.2, position[2]]}
               fontSize={0.12}
-              color="#ffffff"
+              color={themeColors.textSecondary}
               anchorX="center"
               anchorY="middle"
-              rotation={[-Math.PI / 2, 0, 0]}
             >
               {label}
             </Text>
           </>
         );
-
       case 'hover':
         return (
           <>
-            <Text
-              position={[position[0], height + 0.3, position[2]]}
-              fontSize={0.14}
-              color="#ffffff"
+            {shouldShow && (
+              <Text
+                position={[position[0], height + 0.25, position[2]]}
+                fontSize={0.14}
+                color={themeColors.textPrimary}
+                anchorX="center"
+              >
+                {label}: {value}
+              </Text>
+            )}
+             <Text
+              position={[position[0], -0.2, position[2]]}
+              fontSize={0.12}
+              color={themeColors.textSecondary}
               anchorX="center"
               anchorY="middle"
             >
-              {value}
+              {label}
             </Text>
-
-            {(hovered || isHovered) && (
-              <>
-                <Text
-                  position={[position[0], height + 0.6, position[2]]}
-                  fontSize={0.13}
-                  color="#4ECDC4"
-                  anchorX="center"
-                  anchorY="middle"
-                >
-                  {label}
-                </Text>
-                <mesh position={[position[0], height + 0.8, position[2]]}>
-                  <planeGeometry args={[1.2, 0.4]} />
-                  <meshStandardMaterial color="#1a1a1a" transparent opacity={0.9} />
-                </mesh>
-              </>
-            )}
           </>
         );
-
       case 'front':
       default:
         return (
           <>
             <Text
-              position={[position[0], height + 0.3, position[2]]}
+              position={[position[0], height + 0.2, position[2]]}
               fontSize={0.15}
-              color="#ffffff"
+              color={themeColors.textPrimary}
               anchorX="center"
               anchorY="middle"
             >
               {value}
             </Text>
             <Text
-              position={[position[0], 0.15, position[2] + 1.2]}
-              fontSize={0.14}
-              color="#cccccc"
+              position={[position[0], -0.2, position[2]]}
+              fontSize={0.12}
+              color={themeColors.textSecondary}
               anchorX="center"
               anchorY="middle"
             >
               {label}
             </Text>
-            <mesh position={[position[0], 0.1, position[2] + 0.7]}>
-              <boxGeometry args={[0.02, 0.02, 1]} />
-              <meshStandardMaterial color="#666666" transparent opacity={0.5} />
-            </mesh>
           </>
         );
     }
   };
 
   return (
-    <group>
-      <Float floatIntensity={0.25} speed={3} rotationIntensity={0.02}>
+    <group position={position}>
+      <Float floatIntensity={0.1} speed={2} rotationIntensity={0.01}>
         <mesh
           ref={meshRef}
           geometry={geometry}
-          position={[position[0], height / 2, position[2]]}
+          position={[0, height/2, 0]}
           castShadow
           receiveShadow
-          onPointerEnter={() => {
-            setHovered(true);
-            onHover();
-          }}
-          onPointerLeave={() => {
-            setHovered(false);
-            onLeave();
-          }}
+          onPointerEnter={(e) => { e.stopPropagation(); setHovered(true); onHover(); }}
+          onPointerLeave={(e) => { e.stopPropagation(); setHovered(false); onLeave(); }}
         >
           <meshStandardMaterial
             color={color}
-            metalness={0.2}
-            roughness={0.3}
-            transparent
-            opacity={hovered || isHovered ? 0.95 : 0.85}
-            emissive={hovered || isHovered ? color : '#000'}
-            emissiveIntensity={hovered || isHovered ? 0.3 : 0}
+            metalness={isDark ? 0.3 : 0.5}
+            roughness={isDark ? 0.4 : 0.3}
+            emissive={hovered || isHovered ? color : '#000000'}
+            emissiveIntensity={hovered || isHovered ? 0.4 : 0}
           />
         </mesh>
       </Float>

@@ -1,64 +1,56 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 
-function CollapsibleSection({ 
-  title, 
-  children, 
-  defaultOpen = false, 
-  icon,
-  subtitle 
+function CollapsibleSection({
+  title,
+  children,
+  subtitle,
+  isOpen,
+  onToggle,
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  const toggleOpen = () => {
-    setIsOpen(!isOpen);
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-300 mb-4">
+    <div
+      className="rounded-md border transition-all duration-300 p-1 sm:p-4"
+      style={{
+        backgroundColor: 'var(--card-color)',
+        borderColor: 'var(--primary-border-color)',
+        color: 'var(--custom-color)',
+      }}
+    >
       {/* Header */}
-      <div 
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 transition-colors duration-200"
-        onClick={toggleOpen}
+      <div
+        onClick={onToggle}
+        className="flex items-center justify-between cursor-pointer px-2 py-1"
       >
-        <div className="flex items-center space-x-3">
-          {icon && (
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100">
-              <span className="text-blue-700 text-lg">{icon}</span>
-            </div>
-          )}
-          <div>
-            <h3 className="text-lg font-semibold text-black">{title}</h3>
-            {subtitle && (
-              <p className="text-sm text-gray-800 mt-1">{subtitle}</p>
-            )}
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <button
-            className="p-1 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleOpen();
-            }}
+        <div className="flex-1 text-center">
+          <h3
+            className="text-base sm:text-lg font-semibold"
+            style={{ color: 'var(--card-Header-color)' }}
           >
-            {isOpen ? (
-              <ChevronUpIcon className="h-5 w-5 text-gray-800" />
-            ) : (
-              <ChevronDownIcon className="h-5 w-5 text-gray-800" />
-            )}
-          </button>
+            {title}
+          </h3>
+          {subtitle && (
+            <p
+              className="text-xs sm:text-sm mt-1"
+              style={{ color: 'var(--bar-axis-color)' }}
+            >
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        <div className="ml-2" style={{ color: 'var(--bar-axis-color)' }}>
+          {isOpen ? <ChevronUpIcon size={18} /> : <ChevronDownIcon size={18} />}
         </div>
       </div>
 
       {/* Collapsible Content */}
-      <div 
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-        }`}
+      <div
+        className={`transition-all duration-300 ${
+          isOpen ? 'max-h-screen opacity-100 mt-4' : 'max-h-0 opacity-0'
+        } overflow-hidden`}
       >
-        <div className="p-4 pt-0 border-t border-gray-200">
+        <div className="px-1 sm:px-2" style={{ color: 'var(--custom-color)' }}>
           {children}
         </div>
       </div>

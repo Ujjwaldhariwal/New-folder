@@ -5,7 +5,12 @@ import DataTable from '../UI/DataTable';
 
 function Sidebar({ data }) {
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6"
+      style={{
+        color: 'var(--custom-color)',
+      }}
+    >
       <Legend data={data} />
       <Statistics data={data} />
       <DataTable data={data} />
