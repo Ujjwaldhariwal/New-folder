@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
-function DataTable({ data }) {
+function DataTable({ data, headers }) { // Added 'headers' prop
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-  const sortedData = React.useMemo(() => {
+  // Use provided headers or fallback to defaults
+  const headerLabel = headers?.label || 'Category';
+  const headerValue = headers?.value || 'Value';
+
+  const sortedData = useMemo(() => {
+    if (!data) return []; // Guard against null/undefined data
     if (!sortConfig.key) return data;
+    
     return [...data].sort((a, b) => {
       if (a[sortConfig.key] < b[sortConfig.key]) {
         return sortConfig.direction === 'asc' ? -1 : 1;
@@ -28,6 +34,10 @@ function DataTable({ data }) {
     if (sortConfig.key !== key) return '↕️';
     return sortConfig.direction === 'asc' ? '↑' : '↓';
   };
+
+  if (!data) {
+    return <div>No data available.</div>;
+  }
 
   return (
     <div
@@ -58,7 +68,7 @@ function DataTable({ data }) {
                   textAlign: 'left',
                 }}
               >
-                Category {getSortIcon('label')}
+                {headerLabel} {getSortIcon('label')} {/* DYNAMIC HEADER */}
               </th>
               <th
                 className="pb-2 cursor-pointer transition-colors"
@@ -68,25 +78,7 @@ function DataTable({ data }) {
                   textAlign: 'right',
                 }}
               >
-                Value {getSortIcon('value')}
-              </th>
-              <th
-                className="pb-2"
-                style={{
-                  color: 'var(--bar-axis-color)',
-                  textAlign: 'right',
-                }}
-              >
-                Share
-              </th>
-              <th
-                className="pb-2"
-                style={{
-                  color: 'var(--bar-axis-color)',
-                  textAlign: 'center',
-                }}
-              >
-                Status
+                {headerValue} {getSortIcon('value')} {/* DYNAMIC HEADER */}
               </th>
             </tr>
           </thead>
@@ -113,35 +105,8 @@ function DataTable({ data }) {
                     </span>
                   </div>
                 </td>
-
-                <td className="py-3 text-right" style={{ color: 'var(--custom-color)', fontWeight: 600 }}>
-                  {item.value}
-                </td>
-
-                <td className="py-3 text-right" style={{ color: 'var(--custom-color)' }}>
-                  {item.value}%
-                </td>
-
-                <td className="py-3 text-center">
-                  <span
-                    className="px-2 py-1 rounded-full text-xs font-medium"
-                    style={{
-                      backgroundColor:
-                        item.value >= 20
-                          ? 'rgba(34, 197, 94, 0.15)'
-                          : item.value >= 10
-                          ? 'rgba(234, 179, 8, 0.15)'
-                          : 'rgba(239, 68, 68, 0.15)',
-                      color:
-                        item.value >= 20
-                          ? '#22C55E'
-                          : item.value >= 10
-                          ? '#EAB308'
-                          : '#EF4444',
-                    }}
-                  >
-                    {item.value >= 20 ? 'High' : item.value >= 10 ? 'Medium' : 'Low'}
-                  </span>
+                <td className="py-3 text-right font-mono"> {/* Changed alignment and font */}
+                    {typeof item.value === 'number' ? item.value.toLocaleString() : item.value}
                 </td>
               </tr>
             ))}

@@ -25,14 +25,14 @@ function CollapsibleSection({
         <div className="flex-1 text-center">
           <h3
             className="text-base sm:text-lg font-semibold"
-            style={{ color: 'var(--card-Header-color)' }}
+            style={{ color: 'var(--heading-color)' }}
           >
             {title}
           </h3>
           {subtitle && (
             <p
               className="text-xs sm:text-sm mt-1"
-              style={{ color: 'var(--bar-axis-color)' }}
+              style={{ color: 'var(--heading-color)' }}
             >
               {subtitle}
             </p>
@@ -47,10 +47,10 @@ function CollapsibleSection({
       {/* Collapsible Content */}
       <div
         className={`transition-all duration-300 ${
-          isOpen ? 'max-h-screen opacity-100 ' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
         } overflow-hidden`}
       >
-        <div className="px-1 sm:px-2" style={{ color: 'var(--custom-color)' }}>
+        <div className="px-1 sm:px-2" style={{ color: 'var(--heading-color)' }}>
           {children}
         </div>
       </div>

@@ -39,11 +39,12 @@ export {
   GetConnectionStatusReportURL,
   GetConnectionAgingReportURL,
   GetDisconnectionVsReconnectionURL,
-  GetCommunicationStatusMeterURL,
   GetUserListURL,
   generateLogURL,
   GetSLAProfileURL,
 
+
+  GetCommunicationStatusMeterURL,
   comStatusFdrURL,
   comStatusDtrURL,
   comStatusConsumerURL,

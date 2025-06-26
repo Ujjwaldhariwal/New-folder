@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Text, Float } from '@react-three/drei';
 import * as THREE from 'three';
@@ -44,7 +44,7 @@ function Bar3D({
         return (
           <>
             <Text
-              position={[position[0], height + 0.25, position[2]]}
+              position={[0, height + 0.25, 0]} // CORRECTED
               fontSize={0.14}
               color={LABEL_COLOR}
               anchorX="center"
@@ -53,7 +53,7 @@ function Bar3D({
               {value}
             </Text>
             <Text
-              position={[position[0], -0.2, position[2]]}
+              position={[0, -0.2, 0]} // CORRECTED
               fontSize={0.12}
               color={LABEL_COLOR}
               anchorX="center"
@@ -68,7 +68,7 @@ function Bar3D({
           <>
             {shouldShow && (
               <Text
-                position={[position[0], height + 0.25, position[2]]}
+                position={[0, height + 0.25, 0]} // CORRECTED
                 fontSize={0.14}
                 color={LABEL_COLOR}
                 anchorX="center"
@@ -77,7 +77,7 @@ function Bar3D({
               </Text>
             )}
             <Text
-              position={[position[0], -0.2, position[2]]}
+              position={[0, -0.2, 0]} // CORRECTED
               fontSize={0.12}
               color={LABEL_COLOR}
               anchorX="center"
@@ -92,7 +92,7 @@ function Bar3D({
         return (
           <>
             <Text
-              position={[position[0], height + 0.2, position[2]]}
+              position={[0, height + 0.2, 0]} // CORRECTED
               fontSize={0.15}
               color={LABEL_COLOR}
               anchorX="center"
@@ -101,7 +101,7 @@ function Bar3D({
               {value}
             </Text>
             <Text
-              position={[position[0], -0.2, position[2]]}
+              position={[0, -0.2, 0]} // CORRECTED
               fontSize={0.12}
               color={LABEL_COLOR}
               anchorX="center"
@@ -120,7 +120,7 @@ function Bar3D({
         <mesh
           ref={meshRef}
           geometry={geometry}
-          position={[0, height/2, 0]}
+          position={[0, height / 2, 0]}
           castShadow
           receiveShadow
           onPointerEnter={(e) => { e.stopPropagation(); setHovered(true); onHover(); }}

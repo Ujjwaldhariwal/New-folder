@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -51,16 +50,20 @@ function CompactChart({
 
   return (
     <div
-      className="rounded-lg border overflow-hidden flex flex-col h-full"
+      className="rounded-lg custom_border overflow-hidden flex flex-col h-full"
       style={{
         backgroundColor: 'var(--card-color)',
-        borderColor: 'var(--primary-border-color)',
+        borderColor: 'var(--primary-border-color)'
       }}
     >
       {title && (
         <div
-          className="px-4 py-3 border-b"
-          style={{ borderColor: 'var(--primary-border-color)' }}
+          className="px-4 py-3 custom_border"
+          style={{
+            borderColor: 'var(--primary-border-color)',
+            borderBottomWidth: '0.9px',
+            borderStyle: 'solid'
+          }}
         >
           <h4
             className="text-sm font-semibold"
@@ -85,10 +88,12 @@ function CompactChart({
       </div>
 
       <div
-        className="px-4 py-2 border-t"
+        className="px-4 py-2 custom_border"
         style={{
           backgroundColor: 'var(--popup-body-color)',
           borderColor: 'var(--primary-border-color)',
+          borderTopWidth: '0.9px',
+          borderStyle: 'solid'
         }}
       >
         <div className="flex flex-wrap gap-2">
@@ -100,13 +105,19 @@ function CompactChart({
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="text-xs" style={{ color: 'var(--bar-axis-color)' }}>
+                  <span
+                    className="text-xs"
+                    style={{ color: 'var(--bar-axis-color)' }}
+                  >
                     {item.label}
                   </span>
                 </div>
               ))}
               {data.length > 3 && (
-                <span className="text-xs" style={{ color: 'var(--bar-axis-color)' }}>
+                <span
+                  className="text-xs"
+                  style={{ color: 'var(--bar-axis-color)' }}
+                >
                   +{data.length - 3} more
                 </span>
               )}

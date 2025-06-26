@@ -70,7 +70,7 @@ function CollapsibleDashboard() {
         className="backdrop-blur-md shadow-sm border-b"
         style={{
           background: 'var(--popup-body-color)',
-          borderColor: 'rgba(96, 96, 96, 0.3)', // example subtle gray with transparency
+          borderColor: 'rgba(255, 255, 255, 0.3)', // example subtle gray with transparency
         }}
       >
         <div className="container mx-auto px-6 py-3">
@@ -80,14 +80,14 @@ function CollapsibleDashboard() {
               <button
                 onClick={closeAllSections}
                 className="px-3 py-2 text-sm rounded-lg"
-                style={{ backgroundColor: 'var(--disabled-color)', color: 'var(--custom-color)' }}
+                style={{ backgroundColor: 'var(--secondary-color)' }}
               >
                 Collapse All
               </button>
               <button
                 onClick={openAllSections}
                 className="px-3 py-2 text-sm rounded-lg"
-                style={{ backgroundColor: 'var(--secondary-color)', color: '#fff' }}
+                style={{ backgroundColor: 'var(--secondary-color)' }}
               >
                 Expand All
               </button>

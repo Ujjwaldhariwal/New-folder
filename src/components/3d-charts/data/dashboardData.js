@@ -3,6 +3,7 @@ import {
     getConnectionStatusReport, 
     getConnectionAgingReport,
     getPFReport,
+    GetCommunicationStatusMeterReport,
     comStatusFDR,
     comStatusDTR,
     comStatusCONS,
@@ -11,59 +12,111 @@ import {
     outageCountDTR
 } from '../../../auth/services/Services';
 
-// Unique label color for both light and dark mode backgrounds (white and #26293c)
-export const LABEL_COLOR = '#E06C75'; // Muted teal, works well on white and dark blue-gray
-
 // --- STATIC DATA (as a fallback or for other charts) ---
 export const installedMetersData = [
-  { id: 1, label: 'Consumer', value: 85, color: '#06B6D4', labelColor: LABEL_COLOR },
-  { id: 2, label: 'Others', value: 15, color: '#FB923C', labelColor: LABEL_COLOR }
+  { id: 1, label: 'Consumer', value: 85, color: '#06B6D4' },
+  { id: 2, label: 'Others', value: 15, color: '#FB923C' }
 ];
+
 
 // --- API-DRIVEN DATA FUNCTIONS ---
 
 /**
- * A generic error handler for fetch functions to return a consistent error object for charts.
- * @param {string} chartName - The name of the chart for logging purposes.
- * @param {Error} error - The error object caught.
- * @returns {Array<object>} - An array containing a single error data point.
+ * Handles session timeout by clearing stored user data and redirecting to login.
+ */
+const handleSessionTimeout = () => {
+    console.warn("Session token expired. Logging out.");
+    sessionStorage.clear();
+    localStorage.clear();
+    window.location.href = '/login'; // Adjust this route if needed
+};
+
+/**
+ * A generic error handler for fetch functions.
  */
 const handleFetchError = (chartName, error) => {
     console.error(`Error fetching data for ${chartName}:`, error);
-    return [{ id: 1, label: 'API Error', value: 100, color: '#F43F5E', labelColor: LABEL_COLOR }];
+    return [{ id: 1, label: 'API Error', value: 100, color: '#F43F5E' }];
 };
 
-const fetchConnectDisconnectData = async () => {
+// --- REFACTORED: Fetches data for the first two status circles ---
+const fetchConnectionData = async () => {
     try {
         const response = await getConnectionStatusReport();
-        if (!response || response.status !== true || !Array.isArray(response.data) || response.data.length === 0) {
-            throw new Error('Invalid API response for connection status');
+        if (response?.message === "Token is invalid/malformed/expired") {
+            handleSessionTimeout();
+            return [
+                { id: 1, label: 'Connected', value: 'Expired', color: '#22C55E' },
+                { id: 2, label: 'Disconnected', value: 'Expired', color: '#F43F5E' }
+            ];
         }
-        const statusData = response.data[0];
+        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) {
+            throw new Error('Invalid API response');
+        }
+        const data = response.data[0];
         return [
-            { id: 1, label: 'Connected', value: statusData.conn_comm || 0, color: '#22C55E' },
-            { id: 2, label: 'Disconnected', value: statusData.disconn_comm || 0, color: '#F43F5E'},
-            { id: 3, label: 'Communication', value: '...', color: '#2563EB', isLoading: true, labelColor: LABEL_COLOR },
-            { id: 4, label: 'Non Communication', value: '...', color: '#FACC15', isLoading: true, labelColor: LABEL_COLOR }
+            { id: 1, label: 'Connected', value: data.conn_comm || 0, color: '#22C55E' },
+            { id: 2, label: 'Disconnected', value: data.disconn_comm || 0, color: '#F43F5E' }
         ];
     } catch (error) {
-        return handleFetchError("Connection Status", error);
+        console.error("Error fetching connection data:", error);
+        return [
+            { id: 1, label: 'Connected', value: 'Error', color: '#22C55E' },
+            { id: 2, label: 'Disconnected', value: 'Error', color: '#F43F5E' }
+        ];
     }
+};
+
+// --- REFACTORED: Fetches data for the second two status circles ---
+const fetchCommunicationMeterData = async () => {
+    try {
+        const response = await GetCommunicationStatusMeterReport();
+        if (response?.message === "Token is invalid/malformed/expired") {
+            handleSessionTimeout();
+            return [
+                 { id: 3, label: 'Communication', value: 'Expired', color: '#2563EB' },
+                 { id: 4, label: 'Non Communication', value: 'Expired', color: '#FACC15' }
+            ];
+        }
+        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) {
+            throw new Error('Invalid API response');
+        }
+        const data = response.data[0];
+        return [
+            { id: 3, label: 'Communication', value: data.communicating || 0, color: '#2563EB' },
+            { id: 4, label: 'Non Communication', value: data.non_communicating || 0, color: '#FACC15' }
+        ];
+    } catch(error) {
+        console.error("Error fetching communication meter data:", error);
+        return [
+            { id: 3, label: 'Communication', value: 'Error', color: '#2563EB' },
+            { id: 4, label: 'Non Communication', value: 'Error', color: '#FACC15' }
+        ];
+    }
+};
+
+// --- NEW: Main function to fetch all status circle data in parallel ---
+const fetchAllStatusData = async () => {
+    const [connectionData, communicationData] = await Promise.all([
+        fetchConnectionData(),
+        fetchCommunicationMeterData()
+    ]);
+    return [...connectionData, ...communicationData];
 };
 
 const fetchDisconnectionAgeingData = async () => {
   const colors = ['#0EA5E9', '#A855F7', '#22C55E', '#FACC15', '#F43F5E'];
   try {
     const response = await getConnectionAgingReport();
-    if (!response || response.status !== true || !Array.isArray(response.data)) {
-        throw new Error("Invalid API response for disconnection ageing");
+    if (response?.message === "Token is invalid/malformed/expired") {
+        handleSessionTimeout(); return [];
     }
+    if (!response || !response.status || !Array.isArray(response.data)) throw new Error("Invalid API response");
     return response.data.map((item, index) => ({ 
         id: index + 1, 
         label: item.disconnected_since || 'Unknown', 
         value: parseFloat(item['count(9)']) || 0, 
-        color: colors[index % colors.length],
-        labelColor: LABEL_COLOR
+        color: colors[index % colors.length] 
     }));
   } catch (error) {
     return handleFetchError("Disconnection Ageing", error);
@@ -72,22 +125,19 @@ const fetchDisconnectionAgeingData = async () => {
 
 const fetchPFReportData = async () => {
     const colorMapping = {
-        'Between 0.9 and 1': '#22C55E',
-        'Between 0.7 and 0.9': '#FACC15',
-        'Between 0.5 and 0.7': '#F43F5E',
-        'Less than 0.5': '#b91c1c'
+        'Between 0.9 and 1': '#22C55E', 'Between 0.7 and 0.9': '#FACC15',
+        'Between 0.5 and 0.7': '#F43F5E', 'Less than 0.5': '#b91c1c'
     };
     try {
         const response = await getPFReport();
-        if (!response || !response.status || !Array.isArray(response.data)) {
-            throw new Error("Invalid API response for PF Report");
+        if (response?.message === "Token is invalid/malformed/expired") {
+            handleSessionTimeout(); return [];
         }
+        if (!response || !response.status || !Array.isArray(response.data)) throw new Error("Invalid API response");
         return response.data.map((item, index) => ({
-            id: index + 1,
-            label: item.pf_cat || 'Unknown',
+            id: index + 1, label: item.pf_cat || 'Unknown',
             value: parseFloat(item['count(9)']) || 0,
-            color: colorMapping[item.pf_cat] || '#9ca3af',
-            labelColor: LABEL_COLOR
+            color: colorMapping[item.pf_cat] || '#9ca3af'
         }));
     } catch (error) {
         return handleFetchError("PF Report", error);
@@ -96,71 +146,114 @@ const fetchPFReportData = async () => {
 
 const fetchNetMeteringData = async () => {
     const formatDateLabel = (dateStr) => {
-        if (!dateStr || typeof dateStr !== 'string' || !dateStr.includes('-')) return "Invalid Date";
+        if (!dateStr || !dateStr.includes('-')) return "Invalid Date";
         const [month, year] = dateStr.split('-');
-        const date = new Date(`${year}-${month}-01`);
-        return date.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+        return new Date(`${year}-${month}-01`).toLocaleString('en-US', { month: 'short', year: '2-digit' });
     };
     const colors = ['#3b82f6', '#16a34a', '#ef4444', '#f97316', '#8b5cf6', '#d946ef', '#14b8a6', '#f59e0b', '#6366f1', '#ec4899'];
     try {
         const response = await netMeteringCon();
-        if (!response || !response.status || !Array.isArray(response.data)) {
-            throw new Error("Invalid API response for Net Metering");
+        if (response?.message === "Token is invalid/malformed/expired") {
+            handleSessionTimeout(); return [];
         }
+        if (!response || !response.status || !Array.isArray(response.data)) throw new Error("Invalid API response");
         return response.data.map((item, index) => ({
-            id: index + 1,
-            label: formatDateLabel(item.month_year),
-            value: parseFloat(item.count) || 0,
-            color: colors[index % colors.length],
-            labelColor: LABEL_COLOR
+            id: index + 1, label: formatDateLabel(item.month_year),
+            value: parseFloat(item.count) || 0, color: colors[index % colors.length]
         }));
     } catch(error) {
         return handleFetchError("Net Metering", error);
     }
 };
 
-const fetchCommunicationData = async (apiFunction, chartName) => {
+const fetchFDRData = async () => {
     try {
-        const response = await apiFunction();
-        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) {
-            throw new Error(`Invalid API response for ${chartName}`);
+        const response = await comStatusFDR();
+        if (response?.message === "Token is invalid/malformed/expired") {
+            handleSessionTimeout(); return [];
         }
+        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) throw new Error("Invalid API response");
         const data = response.data[0];
-        const communicating = parseFloat(data.communnicating_meters) || 0;
-        const nonCommunicating = parseFloat(data.non_comm_current) || 0;
         return [
-            { id: 1, label: 'On Line Meters', value: communicating, color: '#06B6D4', labelColor: LABEL_COLOR },
-            { id: 2, label: 'Off Line Meters', value: nonCommunicating, color: '#FB923C', labelColor: LABEL_COLOR }
+            { id: 1, label: 'On Line Meters', value: parseFloat(data.communnicating_meters) || 0, color: '#06B6D4' },
+            { id: 2, label: 'Off Line Meters', value: parseFloat(data.non_comm_current) || 0, color: '#FB923C' }
         ];
     } catch (error) {
-        return handleFetchError(chartName, error);
+        return handleFetchError("FDR Status", error);
     }
 };
 
-const fetchFDRData = () => fetchCommunicationData(comStatusFDR, 'FDR Communication Status');
-const fetchDTRData = () => fetchCommunicationData(comStatusDTR, 'DTR Communication Status');
-const fetchConsumerData = () => fetchCommunicationData(comStatusCONS, 'Consumer Communication Status');
-
-const fetchOutageData = async (apiFunction, chartName) => {
+const fetchDTRData = async () => {
     try {
-        const response = await apiFunction();
-        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) {
-            throw new Error(`Invalid API response for ${chartName}`);
+        const response = await comStatusDTR();
+        if (response?.message === "Token is invalid/malformed/expired") {
+            handleSessionTimeout(); return [];
         }
+        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) throw new Error("Invalid API response");
         const data = response.data[0];
         return [
-            { id: 1, label: 'Duration 0-5 min', value: parseFloat(data.less_then_5min) || 0, color: '#2563EB', labelColor: LABEL_COLOR },
-            { id: 2, label: 'Duration 5-10 min', value: parseFloat(data.between_5_10min) || 0, color: '#22C55E', labelColor: LABEL_COLOR },
-            { id: 3, label: 'Duration 10-60 min', value: parseFloat(data.between_10_60min) || 0, color: '#FACC15', labelColor: LABEL_COLOR },
-            { id: 4, label: 'Duration >60 min', value: parseFloat(data.more_then_60min) || 0, color: '#F43F5E', labelColor: LABEL_COLOR }
+            { id: 1, label: 'On Line Meters', value: parseFloat(data.communnicating_meters) || 0, color: '#06B6D4' },
+            { id: 2, label: 'Off Line Meters', value: parseFloat(data.non_comm_current) || 0, color: '#FB923C' }
         ];
     } catch (error) {
-        return handleFetchError(chartName, error);
+        return handleFetchError("DTR Status", error);
     }
 };
 
-const fetchOutageFDR = () => fetchOutageData(outageCountFDR, 'Outage Count FDR');
-const fetchOutageDTR = () => fetchOutageData(outageCountDTR, 'Outage Count DTR');
+const fetchConsumerData = async () => {
+    try {
+        const response = await comStatusCONS();
+        if (response?.message === "Token is invalid/malformed/expired") {
+            handleSessionTimeout(); return [];
+        }
+        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) throw new Error("Invalid API response");
+        const data = response.data[0];
+        return [
+            { id: 1, label: 'On Line Meters', value: parseFloat(data.communnicating_meters) || 0, color: '#06B6D4' },
+            { id: 2, label: 'Off Line Meters', value: parseFloat(data.non_comm_current) || 0, color: '#FB923C' }
+        ];
+    } catch (error) {
+        return handleFetchError("Consumer Status", error);
+    }
+};
+
+const fetchOutageFDR = async () => {
+    try {
+        const response = await outageCountFDR();
+        if (response?.message === "Token is invalid/malformed/expired") {
+            handleSessionTimeout(); return [];
+        }
+        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) throw new Error("Invalid API response");
+        const data = response.data[0];
+        return [
+            { id: 1, label: '0-5 min', value: parseFloat(data.less_then_5min) || 0, color: '#2563EB' },
+            { id: 2, label: '5-10 min', value: parseFloat(data.between_5_10min) || 0, color: '#22C55E' },
+            { id: 3, label: '10-60 min', value: parseFloat(data.between_10_60min) || 0, color: '#FACC15' },
+            { id: 4, label: '>60 min', value: parseFloat(data.more_then_60min) || 0, color: '#F43F5E' }
+        ];
+    } catch (error) {
+        return handleFetchError('Outage Count FDR', error);
+    }
+};
+
+const fetchOutageDTR = async () => {
+    try {
+        const response = await outageCountDTR();
+        if (response?.message === "Token is invalid/malformed/expired") {
+            handleSessionTimeout(); return [];
+        }
+        if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) throw new Error("Invalid API response");
+        const data = response.data[0];
+        return [
+            { id: 1, label: '0-5 min', value: parseFloat(data.less_then_5min) || 0, color: '#2563EB' },
+            { id: 2, label: '5-10 min', value: parseFloat(data.between_5_10min) || 0, color: '#22C55E' },
+            { id: 3, label: '10-60 min', value: parseFloat(data.between_10_60min) || 0, color: '#FACC15' },
+            { id: 4, label: '>60 min', value: parseFloat(data.more_then_60min) || 0, color: '#F43F5E' }
+        ];
+    } catch (error) {
+        return handleFetchError('Outage Count DTR', error);
+    }
+};
 
 
 // --- Dashboard Sections Configuration ---
@@ -169,51 +262,116 @@ export const dashboardSections = [
   {
     id: 'connect-disconnect',
     title: 'Connect & Disconnect Status',
+    icon: '🔌',
     subtitle: 'Real-time connection monitoring',
     defaultOpen: true,
     charts: [
-      { id: 'main-status-circles', title: 'Overall Status', type: 'status-circles', fetchData: fetchConnectDisconnectData },
-      { id: 'installed-meters', title: 'Installed Meters', type: 'pie', data: installedMetersData }
+      { 
+        id: 'main-status-circles', 
+        title: 'Overall Status', 
+        type: 'status-circles', 
+        fetchData: fetchAllStatusData,
+        tableHeaders: { label: 'Overall Category', value: 'Total Count' } // Added
+      },
+      { 
+        id: 'installed-meters', 
+        title: 'Installed Meters', 
+        type: 'pie', 
+        data: installedMetersData,
+        tableHeaders: { label: 'Meter Type', value: 'Value' } // Added
+      }
     ]
   },
   {
     id: 'communication',
     title: 'Communication Status',
+    icon: '📡',
     subtitle: 'Network communication metrics',
     defaultOpen: false,
     charts: [
-      { id: 'comm-fdr', title: 'Communication Status - FDR', type: 'pie', fetchData: fetchFDRData },
-      { id: 'comm-dtr', title: 'Communication Status - DTR', type: 'pie', fetchData: fetchDTRData },
-      { id: 'comm-consumer', title: 'Communication Status - Consumer', type: 'pie', fetchData: fetchConsumerData }
+      { 
+        id: 'comm-fdr', 
+        title: 'Communication Status - FDR', 
+        type: 'pie', 
+        fetchData: fetchFDRData,
+        tableHeaders: { label: 'FDR Meter Status', value: 'Count' } // Added
+      },
+      { 
+        id: 'comm-dtr', 
+        title: 'Communication Status - DTR', 
+        type: 'pie', 
+        fetchData: fetchDTRData,
+        tableHeaders: { label: 'DTR Meter Status', value: 'Count' } // Added
+      },
+      { 
+        id: 'comm-consumer', 
+        title: 'Communication Status - Consumer', 
+        type: 'pie', 
+        fetchData: fetchConsumerData,
+        tableHeaders: { label: 'Consumer Meter Status', value: 'Count' } // Added
+      }
     ]
   },
   {
     id: 'disconnection-ageing',
     title: 'Disconnection Ageing & PF Status',
+    icon: '⏰',
     subtitle: 'Aging analysis and power factor monitoring',
     defaultOpen: false,
     charts: [
-      { id: 'disconnection-aging', title: 'Disconnection Ageing', type: 'pie', fetchData: fetchDisconnectionAgeingData },
-      { id: 'monthly-pf', title: 'Monthly PF Status', type: 'pie', fetchData: fetchPFReportData }
+      { 
+        id: 'disconnection-aging', 
+        title: 'Disconnection Ageing', 
+        type: 'pie', 
+        fetchData: fetchDisconnectionAgeingData,
+        tableHeaders: { label: 'Disconnected Period', value: 'Number of Consumers' } // Added
+      },
+      { 
+        id: 'monthly-pf', 
+        title: 'Monthly PF Status', 
+        type: 'pie', 
+        fetchData: fetchPFReportData,
+        tableHeaders: { label: 'Power Factor Range', value: 'Meter Count' } // Added
+      }
     ]
   },
   {
     id: 'outage-status',
     title: 'Outage Status',
+    icon: '⚡',
     subtitle: 'Power outage duration analysis',
     defaultOpen: false,
     charts: [
-        { id: 'outage-fdr', title: 'Outage Count - Feeders', type: 'bar', fetchData: fetchOutageFDR },
-        { id: 'outage-dtr', title: 'Outage Count - DTR', type: 'bar', fetchData: fetchOutageDTR }
+        { 
+          id: 'outage-fdr', 
+          title: 'Outage Count - Feeders', 
+          type: 'bar', 
+          fetchData: fetchOutageFDR,
+          tableHeaders: { label: 'Outage Duration', value: 'Feeder Count' } // Added
+        },
+        { 
+          id: 'outage-dtr', 
+          title: 'Outage Count - DTR', 
+          type: 'bar', 
+          fetchData: fetchOutageDTR,
+          tableHeaders: { label: 'Outage Duration', value: 'DTR Count' } // Added
+        }
     ]
   },
   {
     id: 'net-metering',
     title: 'Month-wise Conversion to Net Metering',
+    icon: '📊',
     subtitle: 'Monthly net metering conversion analysis',
     defaultOpen: false,
     charts: [
-      { id: 'net-metering-bar', title: 'Month - Wise Conversion to Net Metering', type: 'bar', fetchData: fetchNetMeteringData }
+      { 
+        id: 'net-metering-bar', 
+        title: 'Month - Wise Conversion to Net Metering', 
+        type: 'bar', 
+        fetchData: fetchNetMeteringData,
+        tableHeaders: { label: 'Month/Year', value: 'Net Meters' } // Added
+      }
     ]
   }
 ];

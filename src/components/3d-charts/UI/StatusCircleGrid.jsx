@@ -13,7 +13,7 @@ function StatusCircleGrid({ data = [], isLoading = false }) {
 
   return (
     <div 
-      className="rounded-lg border p-3 sm:p-4 md:p-5 h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-300"
+      className="rounded-lg custom_border p-3 sm:p-4 md:p-5 h-full flex flex-col shadow-sm hover:shadow-md transition-shadow duration-300"
       style={{
         backgroundColor: 'var(--card-color)',
         borderColor: 'var(--primary-border-color)',

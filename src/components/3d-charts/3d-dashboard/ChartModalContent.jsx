@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import Scene from '../Charts/Scene';
 import DataTable from '../UI/DataTable';
-import BarChartControls from '../UI/BarChartControls';
 
 function ChartModalContent({ chart, onClose }) {
   const [barLabelStyle, setBarLabelStyle] = useState('front');
@@ -53,13 +52,8 @@ function ChartModalContent({ chart, onClose }) {
 
       {/* Controls and Data Table */}
       <div className="space-y-6">
-        {chart.type === 'bar' && (
-          <BarChartControls
-            labelStyle={barLabelStyle}
-            onLabelStyleChange={setBarLabelStyle}
-          />
-        )}
-        <DataTable data={chart.data} />
+        {/* The DataTable now receives the tableHeaders from the chart object */}
+        <DataTable data={chart.data} headers={chart.tableHeaders} />
       </div>
     </div>
   );

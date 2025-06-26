@@ -12,15 +12,17 @@
   --body-color: linear-gradient(to top, #ccd3f8, #fee1d2);
   --popup-body-color: white;
   --card-color: rgb(255 255 255);
-  --card-Header-color: #374151;
-  --bar-axis-color: #9a9ea1 !important;
+  --card-Header-color: #4a4a4a;
+  --bar-axis-color: #c5c3c3 !important;
   --active-color: #f7f7f9;
-  --nav-active-color: #0f77eb;
+  --nav-active-color: #d3d3d3;         /* changed from #0f77eb or #fff */
   --login-input-color: #2e2b3d;
-  --custom-color: #000;
+  --custom-color: #d3d3d3;             /* changed from #000 or #fff */
   --account-popup-color: #fff;
-  --disabled-color:#f7f7f9;
-  --navBar-bg-color: linear-gradient(to top, #a8a2d8,#ffffff, #ffffff);
+  --disabled-color: #f7f7f9;
+  --navBar-bg-color: linear-gradient(to top, #a8a2d8, #ffffff, #ffffff);
+    --heading-color: #4a4a4a; /* Dark grey for light mode */
+
 }
 
 .dark {
@@ -28,21 +30,24 @@
   --secondary-color: #5c59e8;
   --primary-chart-color: #cffafe;
   --secondary-chart-color: #0891b2;
-  --primary-border-color: rgb(40, 106, 122);
+  --primary-border-color: #d3d3d3;       /* changed from rgb(40, 106, 122) */
   --secondary-border-color: #0891b2;
   --login-input-color: #2e2b3d;
   --body-color: #1f1d2e;
   --popup-body-color: #1f1d2e;
   --card-color: #26293c;
-  --card-Header-color: rgb(237 213 213);
-  --bar-axis-color: #fff !important;
+  --card-Header-color: #999999;
+  --bar-axis-color: #c5c3c3 !important;  /* changed from #fff */
   --active-color: #000;
-  --nav-active-color: #fff;
-  --custom-color: #fff;
+  --nav-active-color: #d3d3d3;           /* changed from #fff */
+  --custom-color: #d3d3d3;               /* changed from #fff */
   --account-popup-color: rgb(55 65 81);
-  --disabled-color:rgb(55 65 81);
+  --disabled-color: rgb(55 65 81);
   --navBar-bg-color: #26293c;
+    --heading-color: #999999; /* Lighter grey for dark mode */
+
 }
+
 
 .customCardHeader{
   color: var(--card-Header-color);
@@ -500,4 +505,9 @@ input:focus-visible {
       transform: scale(1);
     }
   }
+}
+
+
+.custom_border {
+  border: 0.9px solid rgba(255, 255, 255, 0.2) !important;
 }
