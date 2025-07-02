@@ -1,0 +1,274 @@
+name 	User Registration
+url		http://10.67.14.218/BOSCH/API/userRegistration
+auth	asxxp12/212@121
+Type 	Post
+body	{"username":"Sachin Verma","password":"Sachin@123","user_id":"7057026151","roleid":"ADMIN","created_by":"ADMIN"}
+response	
+		{
+			"status": true,
+			"message": "user successfully registered"
+		}
+		
+name 	User Login
+url		http://10.67.14.218/BOSCH/API/userLogin
+auth	asxxp12/212@121
+Type 	Post
+body	{"mhgj70aizasybty01ob6mfvqoh0fj6rwvjluukcw8mjr04pkjh":"NzA1NzAyNjE1MTpTYWNoaW5AMTIz"}
+response	
+		{
+			"message": "Success",
+			"status": true,
+			"data": {
+				"name": "Sachin Verma",
+				"user_id": "7057026151",
+				"role_id": "ADMIN",
+				"last_login": null,
+				"menu": [
+					"Connection Status",
+					"PF",
+					"Disconnection Aging",
+					"Communication Status",
+					"DC ",
+					"Dashboard",
+					"Report"
+				]
+			}
+		}
+		
+name 	Get Users
+url		http://10.67.14.218/BOSCH/API/getUsers
+auth	asxxp12/212@121
+Type 	Post
+body	{"user_id":""}  -- optional
+response	
+		{
+			"message": "",
+			"status": true,
+			"data": [
+				{
+					"name": "Sachin Verma",
+					"user_id": "7057026153",
+					"role_id": "REPORT",
+					"last_login": null,
+					"user_status": "A"
+				}
+			]
+		}
+		
+		
+name 	PF report
+url		http://10.67.14.218/BOSCH/API/GetPF
+auth	asxxp12/212@121
+Type 	Post
+body	
+response	
+		{
+			"status": true,
+			"message": "",
+			"data": [
+				{
+					"pf_cat": "Less than 0.5",
+					"count(9)": 2179
+				},
+				{
+					"pf_cat": "Between 0.7 and 0.9",
+					"count(9)": 40751
+				},
+				{
+					"pf_cat": "Between 0.5 and 0.7",
+					"count(9)": 8560
+				},
+				{
+					"pf_cat": "Greated than 0.9",
+					"count(9)": 67453
+				}
+			]
+		}
+		
+name 	Connection Disconnection Report
+url		http://10.67.14.218/BOSCH/API/GetConnectionStatus
+auth	asxxp12/212@121
+Type 	Post
+body	
+response	
+		{
+			"message": "",
+			"status": true,
+			"data": [
+				{
+					"conn_comm": 145210,
+					"disconn_comm": 49
+				}
+			]
+		}
+		
+name 	Disconnection Ageing
+url		http://10.67.14.218/BOSCH/API/GetDisconnectionAging
+auth	asxxp12/212@121
+Type 	Post
+body	
+response	
+		{
+			"status": true,
+			"message": "",
+			"data": [
+				{
+					"disconnected_since": "Between 7 and 15 days",
+					"count(9)": 16
+				},
+				{
+					"disconnected_since": "Between 15 and 30 days",
+					"count(9)": 3
+				},
+				{
+					"disconnected_since": "Since Yesterday",
+					"count(9)": 23
+				},
+				{
+					"disconnected_since": "Between 2 to 7 Days",
+					"count(9)": 7
+				}
+			]
+		}
+		
+		
+name 	Date Wise Disconnection Reconnection Report
+url		http://10.67.14.218/BOSCH/API/GetDisconnectionVsReconnection
+auth	asxxp12/212@121
+Type 	Post
+body	
+response	
+		{
+				"status": true,
+				"message": "",
+				"data": [
+					{
+						"rc_dc_date": "13-01-2025",
+						"rc_count": 1,
+						"dc_count": 2
+					},
+					{
+						"rc_dc_date": "15-01-2025",
+						"rc_count": 1,
+						"dc_count": 4
+					},
+					{
+						"rc_dc_date": "18-01-2025",
+						"rc_count": 12,
+						"dc_count": 10
+					},
+					{
+						"rc_dc_date": "19-01-2025",
+						"rc_count": 4,
+						"dc_count": null
+					},
+					{
+						"rc_dc_date": "20-01-2025",
+						"rc_count": 2,
+						"dc_count": 11
+					},
+					{
+						"rc_dc_date": "21-01-2025",
+						"rc_count": 4,
+						"dc_count": null
+					},
+					{
+						"rc_dc_date": "22-01-2025",
+						"rc_count": 4,
+						"dc_count": 16
+					},
+					{
+						"rc_dc_date": "23-01-2025",
+						"rc_count": 7,
+						"dc_count": null
+					},
+					{
+						"rc_dc_date": "24-01-2025",
+						"rc_count": 9,
+						"dc_count": 10
+					},
+					{
+						"rc_dc_date": "27-01-2025",
+						"rc_count": 7,
+						"dc_count": 11
+					},
+					{
+						"rc_dc_date": "28-01-2025",
+						"rc_count": 11,
+						"dc_count": 19
+					},
+					{
+						"rc_dc_date": "29-01-2025",
+						"rc_count": 13,
+						"dc_count": 12
+					},
+					{
+						"rc_dc_date": "30-01-2025",
+						"rc_count": 38,
+						"dc_count": 50
+					}
+				]
+			}
+			
+			
+name 	Communication Status Report
+url		http://10.67.14.218/BOSCH/API/GetCommunicationStatusMeter
+auth	asxxp12/212@121
+Type 	Post
+body	
+response 
+		{
+			"status": true,
+			"message": "",
+			"data": [
+				{
+					"all_mdm_meters": 145259,
+					"non_comm_meters": 16217
+				}
+			]
+		}
+		
+name 	Activity Type
+url		http://10.67.14.218/BOSCH/API/GetActivityType
+auth	asxxp12/212@121
+Type 	Post
+body	
+response {
+    "status": true,
+    "message": "",
+    "data": [
+        {
+            "activity_type_cd": "REMOTECONNECT",
+            "bo_status_cd": "COMINPROG   "
+        },
+        {
+            "activity_type_cd": "REMOTECONNECT",
+            "bo_status_cd": "COMPLETED   "
+        },
+        {
+            "activity_type_cd": "REMOTECONNECT",
+            "bo_status_cd": "DISCARDED   "
+        },
+        {
+            "activity_type_cd": "REMOTECONNECT",
+            "bo_status_cd": "VALERROR    "
+        },
+        {
+            "activity_type_cd": "REMOTEDISCONNECT",
+            "bo_status_cd": "COMINPROG   "
+        },
+        {
+            "activity_type_cd": "REMOTEDISCONNECT",
+            "bo_status_cd": "COMPLETED   "
+        },
+        {
+            "activity_type_cd": "REMOTEDISCONNECT",
+            "bo_status_cd": "DISCARDED   "
+        },
+        {
+            "activity_type_cd": "REMOTEDISCONNECT",
+            "bo_status_cd": "VALERROR    "
+        }
+    ]
+}
+

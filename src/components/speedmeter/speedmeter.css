@@ -1,0 +1,144 @@
+/* @font-face {
+    font-family: digital;
+    src: url(./Digital\ Dismay.otf);
+} */
+
+.speed-container{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* min-height: 29vh; */
+    min-height: 170px;
+}   
+.speed-card{
+    position: absolute;
+    width: 100% !important;
+    height: 100% !important;
+}
+.speed-card .rating{
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.speed-card .rating .block{
+    position: absolute;
+    width: 2px;
+    height: 10px;
+    background-color: #c8c4c4;
+    left: 50%;
+    top:10%;
+    transform-origin: 50% 80px;
+    /* transform: rotate(25deg); */
+    opacity: 0;
+    animation: animate 0.1s linear forwards;
+
+}
+
+@keyframes animate{
+    to{
+        opacity: 1;
+    }
+}
+
+
+/* .speed-card .rating .block:nth-child(-n+91) 
+{
+    background:#f00;
+    box-shadow: 0 0 15px #f00,0 0 30px #f00;
+} */
+
+.speed-card .rating h2 {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    /* color: #ffff; */
+    color: #222;
+    font-size: 1.2em;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.5em;
+}
+.speed-card .rating h2 span {
+    /* font-family: digital; */
+    font-size: 2.5em;
+    font-weight: 300;
+}
+.speed-card .rating h2 sup{
+    font-size: 1.5em;
+    font-weight: 300;
+    top: -0.2em !important; 
+}
+
+
+.digital-clock {
+    /* background-color: #3C4858; */
+    margin: 0.5rem;
+    padding: 0.5rem;
+    /* color: white; */
+    text-align: center;
+    /* font-family: digital; */
+    font-size: 1.5rem !important;
+    font-weight: bold!important;
+    margin-bottom: -11px !important;
+}
+/* .digital-clock {
+    background-color: #3C4858;
+    margin: 1rem;
+    padding: 0.5rem;
+    color: white;
+    text-align: center;
+    font-family: digital;
+    font-size: large;
+    font-weight: bold!important;
+    margin-bottom: -11px !important;
+} */
+.meter-ring{
+    background-color:#36de48 !important;
+    /* box-shadow:0 0 15px #3fe731,0 0 30px #3fe731; */
+}
+
+@media (max-width:480px)  {
+    .speed-card .rating .block{
+        position: absolute;
+        width: 2px;
+        height: 15px;
+        background-color: #c8c4c4;
+        left: 50%;
+        top:10%;
+        transform-origin: 50% 90px;
+        /* transform: rotate(25deg); */
+        opacity: 0;
+        animation: animate 0.1s linear forwards;
+    }
+    .speed-card .rating h2 {
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        /* color: #ffff; */
+        color: #222;
+        font-size: 1.2em;
+        font-weight: 500;
+        text-align: center;
+        line-height: 1.5em;
+    }
+    .speed-container{
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* min-height: 29vh; */
+        min-height: 200px;
+    } 
+    .digital-clock {
+        margin: 0rem !important;
+        padding: 1rem;
+        text-align: center;
+        font-size: 1.5rem !important;
+        font-weight: bold!important;
+        margin-bottom: -11px !important;
+    }  
+}
+
