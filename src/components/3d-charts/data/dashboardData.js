@@ -31,38 +31,58 @@ const handleSessionTimeout = () => {
 };
 
 /**
- * A generic error handler for fetch functions.
+ * MODIFIED: Now throws errors instead of returning fallback data
+ * This ensures the RefreshButton shows the red cross when data fails
  */
 const handleFetchError = (chartName, error) => {
   console.error(`Error fetching data for ${chartName}:`, error);
-  return [{ id: 1, label: 'API Error', value: 100, color: '#FF8C00' }];
+  // Instead of returning fallback data, throw the error
+  throw new Error(`Failed to fetch ${chartName} data: ${error.message}`);
+};
+
+/**
+ * MODIFIED: Check API response status and throw error if API fails
+ */
+const validateApiResponse = (response, chartName) => {
+  // Check for session timeout
+  if (response?.message === 'Token is invalid/malformed/expired') {
+    handleSessionTimeout();
+    throw new Error('Session expired');
+  }
+  
+  // CRITICAL: Check if API returned status: false (this is the key fix)
+  if (response && response.status === false) {
+    console.error(`API Error for ${chartName}:`, response.message);
+    throw new Error(`API Error: ${response.message}`);
+  }
+  
+  // Check for missing or invalid response structure
+  if (!response || response.status !== true) {
+    throw new Error(`Invalid API response for ${chartName}`);
+  }
+  
+  return response;
 };
 
 // --- REFACTORED: Fetches data for the first two status circles ---
 const fetchConnectionData = async () => {
   try {
     const response = await getConnectionStatusReport();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [
-        { id: 1, label: 'Connected', value: 'Expired', color: '#22C55E' },
-        { id: 2, label: 'Disconnected', value: 'Expired', color: '#F43F5E' },
-      ];
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'Connection Status');
+    
+    if (!Array.isArray(validatedResponse.data) || validatedResponse.data.length === 0) {
+      throw new Error('No connection data available');
     }
-    if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) {
-      throw new Error('Invalid API response');
-    }
-    const data = response.data[0];
+    
+    const data = validatedResponse.data[0];
     return [
       { id: 1, label: 'Connected', value: data.conn_comm || 0, color: '#22C55E' },
       { id: 2, label: 'Disconnected', value: data.disconn_comm || 0, color: '#F43F5E' },
     ];
   } catch (error) {
-    console.error('Error fetching connection data:', error);
-    return [
-      { id: 1, label: 'Connected', value: 'Data N/A', color: '#22C55E' },
-      { id: 2, label: 'Disconnected', value: 'Data N/A', color: '#F43F5E' },
-    ];
+    handleFetchError('Connection Status', error);
   }
 };
 
@@ -70,33 +90,30 @@ const fetchConnectionData = async () => {
 const fetchCommunicationMeterData = async () => {
   try {
     const response = await GetCommunicationStatusMeterReport();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [
-        { id: 3, label: 'Communication', value: 'Expired', color: '#2563EB' },
-        { id: 4, label: 'Non Communication', value: 'Expired', color: '#FACC15' },
-      ];
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'Communication Meter Status');
+    
+    if (!Array.isArray(validatedResponse.data) || validatedResponse.data.length === 0) {
+      throw new Error('No communication meter data available');
     }
-    if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0) {
-      throw new Error('Invalid API response');
-    }
-    const data = response.data[0];
+    
+    const data = validatedResponse.data[0];
     return [
       { id: 3, label: 'Communication', value: data.communicating || 0, color: '#2563EB' },
       { id: 4, label: 'Non Communication', value: data.non_communicating || 0, color: '#FACC15' },
     ];
   } catch (error) {
-    console.error('Error fetching communication meter data:', error);
-    return [
-      { id: 3, label: 'Communication', value: 'Data N/A', color: '#2563EB' },
-      { id: 4, label: 'Non Communication', value: 'Data N/A', color: '#FACC15' },
-    ];
+    handleFetchError('Communication Meter Status', error);
   }
 };
 
 // --- NEW: Main function to fetch all status circle data in parallel ---
 const fetchAllStatusData = async () => {
-  const [connectionData, communicationData] = await Promise.all([fetchConnectionData(), fetchCommunicationMeterData()]);
+  const [connectionData, communicationData] = await Promise.all([
+    fetchConnectionData(), 
+    fetchCommunicationMeterData()
+  ]);
   return [...connectionData, ...communicationData];
 };
 
@@ -104,19 +121,22 @@ const fetchDisconnectionAgeingData = async () => {
   const colors = ['#0EA5E9', '#A855F7', '#22C55E', '#FACC15', '#FF8C00'];
   try {
     const response = await getConnectionAgingReport();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [];
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'Disconnection Ageing');
+    
+    if (!Array.isArray(validatedResponse.data)) {
+      throw new Error('Invalid disconnection ageing data format');
     }
-    if (!response || !response.status || !Array.isArray(response.data)) throw new Error('Invalid API response');
-    return response.data.map((item, index) => ({
+    
+    return validatedResponse.data.map((item, index) => ({
       id: index + 1,
       label: item.disconnected_since || 'Unknown',
       value: parseFloat(item['count(9)']) || 0,
       color: colors[index % colors.length],
     }));
   } catch (error) {
-    return handleFetchError('Disconnection Ageing', error);
+    handleFetchError('Disconnection Ageing', error);
   }
 };
 
@@ -129,19 +149,22 @@ const fetchPFReportData = async () => {
   };
   try {
     const response = await getPFReport();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [];
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'PF Report');
+    
+    if (!Array.isArray(validatedResponse.data)) {
+      throw new Error('Invalid PF report data format');
     }
-    if (!response || !response.status || !Array.isArray(response.data)) throw new Error('Invalid API response');
-    return response.data.map((item, index) => ({
+    
+    return validatedResponse.data.map((item, index) => ({
       id: index + 1,
       label: item.pf_cat || 'Unknown',
       value: parseFloat(item['count(9)']) || 0,
       color: colorMapping[item.pf_cat] || '#A855F7',
     }));
   } catch (error) {
-    return handleFetchError('PF Report', error);
+    handleFetchError('PF Report', error);
   }
 };
 
@@ -152,123 +175,105 @@ const fetchNetMeteringData = async () => {
     return new Date(`${year}-${month}-01`).toLocaleString('en-US', { month: 'short', year: '2-digit' });
   };
   const colors = [
-    '#3b82f6',
-    '#16a34a',
-    '#0ea5e9',
-    '#8b5cf6',
-    '#d946ef',
-    '#14b8a6',
-    '#facc15',
-    '#6366f1',
-    '#22c55e',
-    '#0f766e',
+    '#3b82f6', '#16a34a', '#0ea5e9', '#8b5cf6', '#d946ef',
+    '#14b8a6', '#facc15', '#6366f1', '#22c55e', '#0f766e',
   ];
   try {
     const response = await netMeteringCon();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [];
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'Net Metering');
+    
+    if (!Array.isArray(validatedResponse.data)) {
+      throw new Error('Invalid net metering data format');
     }
-    if (!response || !response.status || !Array.isArray(response.data)) throw new Error('Invalid API response');
-    return response.data.map((item, index) => ({
+    
+    return validatedResponse.data.map((item, index) => ({
       id: index + 1,
       label: formatDateLabel(item.month_year),
       value: parseFloat(item.count) || 0,
       color: colors[index % colors.length],
     }));
   } catch (error) {
-    return handleFetchError('Net Metering', error);
+    handleFetchError('Net Metering', error);
   }
 };
 
 const fetchFDRData = async () => {
   try {
     const response = await comStatusFDR();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [];
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'FDR Status');
+    
+    if (!Array.isArray(validatedResponse.data) || validatedResponse.data.length === 0) {
+      throw new Error('No FDR data available');
     }
-    if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0)
-      throw new Error('Invalid API response');
-    const data = response.data[0];
+    
+    const data = validatedResponse.data[0];
     return [
       { id: 1, label: 'On Line Meters', value: parseFloat(data.communnicating_meters) || 0, color: '#06B6D4' },
       { id: 2, label: 'Off Line Meters', value: parseFloat(data.non_comm_current) || 0, color: '#FB923C' },
     ];
   } catch (error) {
-    return handleFetchError('FDR Status', error);
+    handleFetchError('FDR Status', error);
   }
 };
 
 const fetchDTRData = async () => {
   try {
     const response = await comStatusDTR();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [];
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'DTR Status');
+    
+    if (!Array.isArray(validatedResponse.data) || validatedResponse.data.length === 0) {
+      throw new Error('No DTR data available');
     }
-    if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0)
-      throw new Error('Invalid API response');
-    const data = response.data[0];
+    
+    const data = validatedResponse.data[0];
     return [
       { id: 1, label: 'On Line Meters', value: parseFloat(data.communnicating_meters) || 0, color: '#06B6D4' },
       { id: 2, label: 'Off Line Meters', value: parseFloat(data.non_comm_current) || 0, color: '#FB923C' },
     ];
   } catch (error) {
-    return handleFetchError('DTR Status', error);
+    handleFetchError('DTR Status', error);
   }
 };
 
 const fetchConsumerData = async () => {
   try {
     const response = await comStatusCONS();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [];
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'Consumer Status');
+    
+    if (!Array.isArray(validatedResponse.data) || validatedResponse.data.length === 0) {
+      throw new Error('No consumer data available');
     }
-    if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0)
-      throw new Error('Invalid API response');
-    const data = response.data[0];
+    
+    const data = validatedResponse.data[0];
     return [
       { id: 1, label: 'On Line Meters', value: parseFloat(data.communnicating_meters) || 0, color: '#06B6D4' },
       { id: 2, label: 'Off Line Meters', value: parseFloat(data.non_comm_current) || 0, color: '#FB923C' },
     ];
   } catch (error) {
-    return handleFetchError('Consumer Status', error);
+    handleFetchError('Consumer Status', error);
   }
 };
 
 const fetchOutageFDR = async () => {
   try {
     const response = await outageCountFDR();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [];
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'Outage Count FDR');
+    
+    if (!Array.isArray(validatedResponse.data) || validatedResponse.data.length === 0) {
+      throw new Error('No outage FDR data available');
     }
-    if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0)
-      throw new Error('Invalid API response');
-    const data = response.data[0];
-    return [
-      { id: 1, label: '0-5 min', value: parseFloat(data.less_then_5min) || 0, color: '#2563EB' }, // blue
-      { id: 2, label: '5-10 min', value: parseFloat(data.between_5_10min) || 0, color: '#22C55E' }, // green
-      { id: 3, label: '10-60 min', value: parseFloat(data.between_10_60min) || 0, color: '#FACC15' }, // yellow
-      { id: 4, label: '>60 min', value: parseFloat(data.more_then_60min) || 0, color: '#8b5cf6' }, // violet
-    ];
-  } catch (error) {
-    return handleFetchError('Outage Count FDR', error);
-  }
-};
-
-const fetchOutageDTR = async () => {
-  try {
-    const response = await outageCountDTR();
-    if (response?.message === 'Token is invalid/malformed/expired') {
-      handleSessionTimeout();
-      return [];
-    }
-    if (!response || !response.status || !Array.isArray(response.data) || response.data.length === 0)
-      throw new Error('Invalid API response');
-    const data = response.data[0];
+    
+    const data = validatedResponse.data[0];
     return [
       { id: 1, label: '0-5 min', value: parseFloat(data.less_then_5min) || 0, color: '#2563EB' },
       { id: 2, label: '5-10 min', value: parseFloat(data.between_5_10min) || 0, color: '#22C55E' },
@@ -276,7 +281,30 @@ const fetchOutageDTR = async () => {
       { id: 4, label: '>60 min', value: parseFloat(data.more_then_60min) || 0, color: '#8b5cf6' },
     ];
   } catch (error) {
-    return handleFetchError('Outage Count DTR', error);
+    handleFetchError('Outage Count FDR', error);
+  }
+};
+
+const fetchOutageDTR = async () => {
+  try {
+    const response = await outageCountDTR();
+    
+    // MODIFIED: Use validateApiResponse to check for API errors
+    const validatedResponse = validateApiResponse(response, 'Outage Count DTR');
+    
+    if (!Array.isArray(validatedResponse.data) || validatedResponse.data.length === 0) {
+      throw new Error('No outage DTR data available');
+    }
+    
+    const data = validatedResponse.data[0];
+    return [
+      { id: 1, label: '0-5 min', value: parseFloat(data.less_then_5min) || 0, color: '#2563EB' },
+      { id: 2, label: '5-10 min', value: parseFloat(data.between_5_10min) || 0, color: '#22C55E' },
+      { id: 3, label: '10-60 min', value: parseFloat(data.between_10_60min) || 0, color: '#FACC15' },
+      { id: 4, label: '>60 min', value: parseFloat(data.more_then_60min) || 0, color: '#8b5cf6' },
+    ];
+  } catch (error) {
+    handleFetchError('Outage Count DTR', error);
   }
 };
 
@@ -295,14 +323,14 @@ export const dashboardSections = [
         title: 'Overall Status',
         type: 'status-circles',
         fetchData: fetchAllStatusData,
-        tableHeaders: { label: 'Overall Category', value: 'Total Count' }, // Added
+        tableHeaders: { label: 'Overall Category', value: 'Total Count' },
       },
       {
         id: 'installed-meters',
         title: 'Installed Meters',
         type: 'pie',
         data: installedMetersData,
-        tableHeaders: { label: 'Meter Type', value: 'Value' }, // Added
+        tableHeaders: { label: 'Meter Type', value: 'Value' },
       },
     ],
   },
@@ -318,21 +346,21 @@ export const dashboardSections = [
         title: 'Communication Status - FDR',
         type: 'pie',
         fetchData: fetchFDRData,
-        tableHeaders: { label: 'FDR Meter Status', value: 'Count' }, // Added
+        tableHeaders: { label: 'FDR Meter Status', value: 'Count' },
       },
       {
         id: 'comm-dtr',
         title: 'Communication Status - DTR',
         type: 'pie',
         fetchData: fetchDTRData,
-        tableHeaders: { label: 'DTR Meter Status', value: 'Count' }, // Added
+        tableHeaders: { label: 'DTR Meter Status', value: 'Count' },
       },
       {
         id: 'comm-consumer',
         title: 'Communication Status - Consumer',
         type: 'pie',
         fetchData: fetchConsumerData,
-        tableHeaders: { label: 'Consumer Meter Status', value: 'Count' }, // Added
+        tableHeaders: { label: 'Consumer Meter Status', value: 'Count' },
       },
     ],
   },
@@ -348,14 +376,14 @@ export const dashboardSections = [
         title: 'Disconnection Ageing',
         type: 'pie',
         fetchData: fetchDisconnectionAgeingData,
-        tableHeaders: { label: 'Disconnected Period', value: 'Number of Consumers' }, // Added
+        tableHeaders: { label: 'Disconnected Period', value: 'Number of Consumers' },
       },
       {
         id: 'monthly-pf',
         title: 'Monthly PF Status',
         type: 'pie',
         fetchData: fetchPFReportData,
-        tableHeaders: { label: 'Power Factor Range', value: 'Meter Count' }, // Added
+        tableHeaders: { label: 'Power Factor Range', value: 'Meter Count' },
       },
     ],
   },
@@ -371,14 +399,14 @@ export const dashboardSections = [
         title: 'Outage Count - Feeders',
         type: 'bar',
         fetchData: fetchOutageFDR,
-        tableHeaders: { label: 'Outage Duration', value: 'Feeder Count' }, // Added
+        tableHeaders: { label: 'Outage Duration', value: 'Feeder Count' },
       },
       {
         id: 'outage-dtr',
         title: 'Outage Count - DTR',
         type: 'bar',
         fetchData: fetchOutageDTR,
-        tableHeaders: { label: 'Outage Duration', value: 'DTR Count' }, // Added
+        tableHeaders: { label: 'Outage Duration', value: 'DTR Count' },
       },
     ],
   },
@@ -394,7 +422,7 @@ export const dashboardSections = [
         title: 'Month - Wise Conversion to Net Metering',
         type: 'bar',
         fetchData: fetchNetMeteringData,
-        tableHeaders: { label: 'Month/Year', value: 'Net Meters' }, // Added
+        tableHeaders: { label: 'Month/Year', value: 'Net Meters' },
       },
     ],
   },

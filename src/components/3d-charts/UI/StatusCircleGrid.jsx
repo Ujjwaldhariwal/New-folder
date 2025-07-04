@@ -1,7 +1,12 @@
+// StatusCircleGrid.js
 import React from 'react';
 import StatusCircle from './StatusCircle';
 
 function StatusCircleGrid({ data = [], isLoading = false }) {
+  const fallbackData = [
+    { id: -1, label: 'Data N/A', value: 0, color: '#9CA3AF' }
+  ];
+
   const displayData = isLoading
     ? [
         { id: 1, label: 'Loading...', value: '...', color: '#6b7280', isLoading: true },
@@ -9,7 +14,7 @@ function StatusCircleGrid({ data = [], isLoading = false }) {
         { id: 3, label: 'Loading...', value: '...', color: '#6b7280', isLoading: true },
         { id: 4, label: 'Loading...', value: '...', color: '#6b7280', isLoading: true },
       ]
-    : data;
+    : (Array.isArray(data) && data.length > 0 ? data : fallbackData);
 
   return (
     <div 
@@ -33,6 +38,5 @@ function StatusCircleGrid({ data = [], isLoading = false }) {
     </div>
   );
 }
-
 
 export default StatusCircleGrid;

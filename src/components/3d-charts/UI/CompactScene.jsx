@@ -10,8 +10,8 @@ function CompactScene({ data, chartType, barLabelStyle }) {
       case 'pie':
         return (
           <group
-            rotation={[-Math.PI / 2, 0, 0]} // ✅ Flat top view (not inclined)
-            scale={[.9, .9, .9]}
+            rotation={[-Math.PI / 2, 0, 0]} 
+            scale={[.85, .85, .85]}
             position={[0, -0.1, 0]}
           >
             <PieChart3D data={data} labelStyle="compact" />
@@ -21,7 +21,7 @@ function CompactScene({ data, chartType, barLabelStyle }) {
       case 'bar':
       default:
         return (
-          <group scale={[1.4, 1.4, 1.4]} position={[0, 0, 0]}>
+          <group scale={[1.4, 1.4, 1.4]} position={[0, -0.1, 0]}>
             <BarChart3D data={data} labelStyle={barLabelStyle} />
           </group>
         );

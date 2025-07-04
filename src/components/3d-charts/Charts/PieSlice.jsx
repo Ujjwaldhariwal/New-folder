@@ -13,12 +13,12 @@ function PieSlice({
   radius,
   height,
   color,
-  label,
   value,
   isHovered,
   onHover,
   onLeave,
   labelStyle = 'default',
+  isNA,
 }) {
   const meshRef = useRef();
   const [labelColor, setLabelColor] = useState(getLabelColorFromCSS());
@@ -54,18 +54,37 @@ function PieSlice({
 
   const midAngle = (startAngle + endAngle) / 2;
   const sliceAngle = endAngle - startAngle;
-  const percentage = ((sliceAngle / (Math.PI * 2)) * 100).toFixed(1);
 
-  const isSmallSlice = sliceAngle < Math.PI / 6; // Less than 30 degrees
+  const percentage = isNA ? '0.0' : ((sliceAngle / (Math.PI * 2)) * 100).toFixed(1);
+  const displayValue = isNA ? 0 : value;
+
+  const isSmallSlice = sliceAngle < Math.PI / 6;
   const labelOffset = radius * (isSmallSlice ? 1.6 : 1.2);
-  const labelY = labelStyle === 'compact' ? 0.15 : height + 0.3;
-  const labelPosition = [
-    labelOffset * Math.cos(midAngle),
-    labelY,
-    labelOffset * Math.sin(midAngle),
-  ];
 
-  const showLabel = percentage >= 5;
+  const labelPosition = useMemo(() => {
+    if (labelStyle === 'compact') {
+      const x = labelOffset * Math.sin(midAngle);
+      const z = -labelOffset * Math.cos(midAngle);
+      return [x, -0.5, z];
+    } else {
+      const x = labelOffset * Math.cos(midAngle);
+      const z = labelOffset * Math.sin(midAngle);
+      return [x, height + 0.3, z];
+    }
+  }, [labelOffset, midAngle, labelStyle, height]);
+
+  const showLabel = parseFloat(percentage) >= 5 || isNA;
+
+  const pointerLine = useMemo(() => {
+    if (!(labelStyle === 'compact' && isSmallSlice && showLabel)) return null;
+    const x1 = radius * Math.sin(midAngle);
+    const z1 = -radius * Math.cos(midAngle);
+    const x2 = labelOffset * Math.sin(midAngle);
+    const z2 = -labelOffset * Math.cos(midAngle);
+
+    const points = [new THREE.Vector3(x1, -0.5, z1), new THREE.Vector3(x2, -0.5, z2)];
+    return new THREE.BufferGeometry().setFromPoints(points);
+  }, [labelStyle, isSmallSlice, showLabel, radius, labelOffset, midAngle]);
 
   return (
     <group>
@@ -93,24 +112,31 @@ function PieSlice({
         />
       </mesh>
 
-      {/* Regular label (only for bigger slices) */}
+      {/* Pointer Line for Small Slices in Compact View */}
+      {pointerLine && (
+        <line geometry={pointerLine}>
+          <lineBasicMaterial color={labelColor} linewidth={2} />
+        </line>
+      )}
+
+      {/* --- STATIC LABELS --- */}
+      {/* MODIFIED: Removed "!isHovered" so this label remains visible even during hover. */}
       {showLabel && labelStyle === 'compact' && (
         <Text
           position={labelPosition}
           fontSize={isSmallSlice ? 0.18 : 0.22}
           color={labelColor}
           anchorX="center"
-          anchorY="middle"
           outlineWidth={0.008}
           outlineColor="rgba(255,255,255,0.9)"
           rotation={[Math.PI / 2, 0, 0]}
           fontWeight="normal"
           renderOrder={10}
         >
-          {value}
+          {displayValue}
         </Text>
       )}
-
+      
       {showLabel && labelStyle !== 'compact' && (
         <Text
           position={labelPosition}
@@ -123,29 +149,47 @@ function PieSlice({
           fontWeight="normal"
           renderOrder={10}
         >
-          {value}
+          {displayValue}
         </Text>
       )}
 
-      {/* Hover label – always shown on hover in compact and modal */}
-      {isHovered && (
+      {/* --- HOVER LABELS --- */}
+      {/* This label appears ON HOVER, in addition to the static label above. */}
+      {isHovered && labelStyle === 'compact' && (
         <Text
-          position={
-            labelStyle === 'compact'
-              ? [0, 0, radius + 1.2] // ✅ Correct for flat top chart
-              : [0, height + 1.2, 0]
-          }
+          position={[0, height - 1.2, 0]}
           fontSize={0.35}
-          color={color}
+          color="#ffffff"
           anchorX="center"
           anchorY="middle"
           outlineColor="rgba(0,0,0,0.85)"
           outlineWidth={0.01}
-          rotation={labelStyle === 'compact' ? [0, 0, 0] : [0, 0, 0]} // ✅ Faces camera in both
+          rotation={[Math.PI / 2, 0, 0]}
           fontWeight="bold"
           renderOrder={15}
         >
-          {value} ({percentage}%)
+          {displayValue} ({percentage}%)
+        </Text>
+      )}
+      
+      {isHovered && labelStyle !== 'compact' && (
+        <Text
+          position={[
+            radius * Math.cos(midAngle) * 0.6,
+            height + 1.2,
+            radius * Math.sin(midAngle) * 0.6,
+          ]}
+          fontSize={0.35}
+          color="#ffffff"
+          anchorX="center"
+          anchorY="middle"
+          outlineColor="rgba(0,0,0,0.85)"
+          outlineWidth={0.01}
+          rotation={[0, 0, 0]}
+          fontWeight="bold"
+          renderOrder={15}
+        >
+          {displayValue} ({percentage}%)
         </Text>
       )}
     </group>
